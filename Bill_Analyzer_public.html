@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AIS Bill Analyzer</title>
+<title>My Bill Analyzer</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&family=Sora:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -206,12 +206,21 @@ nav{display:flex;flex-direction:column;gap:5px}
 .mg{display:flex;flex-direction:column;align-items:center;height:100%;justify-content:flex-end;flex:1;max-width:140px}
 .mbar{width:100%;max-width:84px;border-radius:10px 10px 0 0;position:relative;
   background:linear-gradient(180deg,var(--blue),var(--blue-deep));
-  transition:height 1s cubic-bezier(.22,1,.36,1);box-shadow:0 4px 16px rgba(59,130,246,.32)}
+  transition:height 1s cubic-bezier(.22,1,.36,1),transform .18s ease,filter .18s ease;box-shadow:0 4px 16px rgba(59,130,246,.32)}
 .mbar.peak{background:linear-gradient(180deg,var(--red),var(--red-2));box-shadow:0 4px 16px rgba(239,68,68,.34)}
+.mbar.clickable{cursor:pointer}
+.mbar.clickable:hover{filter:brightness(1.08);transform:translateY(-3px)}
+.mbar.zero{box-shadow:none;opacity:.42}
+.mchart.compact{gap:10px}
+.mchart.compact .mbar{max-width:60px}
+.mchart.year-mode .mbar{max-width:104px}
 .mbar .v{position:absolute;top:-28px;left:50%;transform:translateX(-50%);font-family:'Sora';font-weight:700;font-size:15px;white-space:nowrap}
 .mxlab{margin-top:12px;text-align:center}
 .mxlab .m{font-weight:600;font-size:14px}
 .mxlab .y{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted)}
+.chart-back{margin-left:10px;padding:5px 10px;border:1px solid var(--glass-brd);border-radius:10px;background:var(--field);color:var(--ink);font-family:'IBM Plex Sans Thai';font-size:12px;font-weight:600;cursor:pointer}
+.chart-back:hover{border-color:var(--blue);color:var(--blue)}
+.chart-empty{margin:auto;color:var(--muted);font-size:14px}
 
 /* insights */
 .ins-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-top:24px}
@@ -358,7 +367,9 @@ table.dt tfoot td.l{text-align:left;font-family:'Sora'}
 
 .watch{display:flex;flex-direction:column;gap:12px}
 .wrow{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:16px;padding:15px 18px;border-radius:14px;
-  background:rgba(239,68,68,.07);border:1px solid rgba(239,68,68,.22)}
+  background:rgba(239,68,68,.07);border:1px solid rgba(239,68,68,.22);cursor:pointer;transition:.18s}
+.wrow:hover{transform:translateY(-1px);box-shadow:0 10px 28px rgba(31,59,120,.12);border-color:rgba(59,130,246,.35)}
+.wrow:focus-visible{outline:3px solid rgba(59,130,246,.25);outline-offset:2px}
 .wrow.amber{background:rgba(245,158,11,.08);border-color:rgba(245,158,11,.26)}
 .wrow .wi{width:42px;height:42px;border-radius:12px;display:grid;place-items:center;background:rgba(239,68,68,.14);color:var(--red);flex-shrink:0}
 .wrow.amber .wi{background:rgba(245,158,11,.16);color:#d97706}
@@ -458,6 +469,39 @@ table.dt tfoot td.l{text-align:left;font-family:'Sora'}
 #toast.show{transform:translateX(-50%) translateY(0);opacity:1}
 html[data-theme="dark"] #toast{background:#fff;color:#0a0f1e}
 
+.review-modal{position:fixed;inset:0;z-index:240;display:none;align-items:center;justify-content:center;padding:24px;
+  background:rgba(15,27,51,.46);backdrop-filter:blur(10px)}
+.review-modal.show{display:flex}
+.review-dialog{width:min(1080px,96vw);max-height:92vh;display:flex;flex-direction:column;overflow:hidden;
+  background:var(--glass-2);border:1px solid var(--glass-brd);border-radius:20px;box-shadow:0 24px 80px rgba(15,27,51,.38)}
+.review-head{display:flex;align-items:center;gap:14px;justify-content:space-between;padding:18px 22px;border-bottom:1px solid var(--line)}
+.review-title{font-family:'Sora';font-weight:700;font-size:18px;color:var(--ink)}
+.review-title small{display:block;font-family:'IBM Plex Sans Thai';font-weight:400;font-size:12px;color:var(--muted);margin-top:2px}
+.review-x{width:38px;height:38px;border-radius:12px;border:1px solid var(--glass-brd);background:var(--field);color:var(--ink);
+  display:grid;place-items:center;cursor:pointer;font-size:22px;line-height:1}
+.review-body{display:grid;grid-template-columns:minmax(280px,420px) 1fr;gap:18px;padding:20px;overflow:auto}
+.slip-preview{min-height:460px;border-radius:14px;border:1px solid var(--line);background:rgba(255,255,255,.48);
+  display:grid;place-items:center;overflow:hidden;position:relative}
+html[data-theme="dark"] .slip-preview{background:rgba(10,15,30,.45)}
+.slip-preview img{width:100%;height:100%;object-fit:contain;display:none}
+.slip-preview.has-img img{display:block}
+.no-slip{padding:26px;text-align:center;color:var(--muted);font-size:13px;line-height:1.65}
+.manual-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.manual-form .full{grid-column:1/-1}
+.manual-form label{display:flex;flex-direction:column;gap:5px;font-size:12px;color:var(--muted);font-weight:600}
+.manual-form input,.manual-form select,.manual-form textarea{width:100%;padding:10px 11px;border-radius:11px;border:1px solid var(--field-brd);
+  background:var(--field);color:var(--ink);font-family:'IBM Plex Sans Thai';font-size:13px}
+.manual-form textarea{min-height:88px;resize:vertical}
+.manual-form input:focus,.manual-form select:focus,.manual-form textarea:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(59,130,246,.18)}
+.manual-check{flex-direction:row!important;align-items:center;gap:9px!important;color:var(--ink-2)!important}
+.manual-check input{width:17px;height:17px}
+.ocr-text{max-height:112px;overflow:auto;padding:10px 12px;border-radius:11px;background:rgba(120,140,180,.12);
+  color:var(--ink-2);font-family:'JetBrains Mono',monospace;font-size:11px;white-space:pre-wrap}
+.review-actions{display:flex;justify-content:flex-end;gap:10px;border-top:1px solid var(--line);padding-top:12px}
+.review-btn{padding:10px 16px;border-radius:11px;border:1px solid var(--glass-brd);font-family:'IBM Plex Sans Thai';font-weight:700;cursor:pointer}
+.review-btn.secondary{background:var(--field);color:var(--ink)}
+.review-btn.primary{background:linear-gradient(135deg,var(--blue),var(--blue-2));color:#fff;border-color:transparent}
+
 /* tooltip */
 #tip{position:fixed;background:var(--ink);color:var(--bg);padding:8px 12px;border-radius:9px;
   font-family:'JetBrains Mono',monospace;font-size:11.5px;pointer-events:none;opacity:0;
@@ -506,6 +550,13 @@ html[data-theme="dark"] #tip{background:#fff;color:#0a0f1e}
   .wrow .wv{grid-column:2;text-align:left}
   .tb-range .field{flex:1}
 }
+@media(max-width:820px){
+  .review-body{grid-template-columns:1fr}
+  .slip-preview{min-height:360px}
+  .manual-form{grid-template-columns:1fr}
+}
+
+.brand-logo-text{display:grid;place-items:center;font-family:'Sora',sans-serif;font-weight:800;color:#fff;background:linear-gradient(135deg,var(--blue),var(--blue-deep));font-size:16px}
 </style>
 <!-- ===== EMBEDDED LIBRARIES (offline) ===== -->
 <script>/*!
@@ -560,7 +611,7 @@ window.dispatchEvent(new Event("pdfjs-ready"));
   <div class="box">
     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
     <div class="t1">วางไฟล์เพื่ออัปโหลด</div>
-    <div class="t2">PDF ใบแจ้งหนี้ (ใบละเบอร์) หรือไฟล์ .zip ทั้งเดือน</div>
+    <div class="t2">รูปสลิป, PDF หรือไฟล์ .zip จากมือถือ</div>
   </div>
 </div>
 
@@ -574,14 +625,73 @@ window.dispatchEvent(new Event("pdfjs-ready"));
 
 <div id="toast"></div>
 
+<div id="reviewModal" class="review-modal" aria-hidden="true">
+  <div class="review-dialog" role="dialog" aria-modal="true" aria-labelledby="reviewTitle">
+    <div class="review-head">
+      <div class="review-title" id="reviewTitle">ตรวจสอบสลิป<small id="reviewSub">แก้ไขเฉพาะรายการนี้</small></div>
+      <button type="button" class="review-x" id="reviewCloseBtn" aria-label="ปิด">×</button>
+    </div>
+    <form id="reviewForm" class="review-body">
+      <div class="slip-preview" id="reviewSlipBox">
+        <img id="reviewSlipImg" alt="ภาพสลิป">
+        <div class="no-slip" id="reviewNoSlip">ไม่มีภาพสลิปสำหรับรายการนี้<br>อัปโหลดสลิปเดิมอีกครั้งเพื่อสร้างภาพตัวอย่าง</div>
+      </div>
+      <div class="manual-form">
+        <label>วันที่ทำรายการ
+          <input id="revDate" type="datetime-local">
+        </label>
+        <label>จำนวนเงิน
+          <input id="revAmount" type="number" step="0.01" min="0" inputmode="decimal">
+        </label>
+        <label class="full">ผู้รับโอน / ร้านค้า
+          <input id="revPayee" type="text" autocomplete="off">
+        </label>
+        <label>หมวดค่าใช้จ่าย
+          <select id="revCategory"></select>
+        </label>
+        <label>ธนาคาร
+          <select id="revBank"></select>
+        </label>
+        <label>ช่องทาง
+          <select id="revChannel">
+            <option value="Manual">Manual</option>
+            <option value="OCR">OCR</option>
+            <option value="Mobile Banking">Mobile Banking</option>
+            <option value="Bank Transfer">Bank Transfer</option>
+            <option value="Other">Other</option>
+          </select>
+        </label>
+        <label>รหัสอ้างอิง
+          <input id="revRef" type="text" autocomplete="off">
+        </label>
+        <label>ไฟล์ต้นทาง
+          <input id="revSource" type="text" readonly>
+        </label>
+        <label class="full">หมายเหตุ
+          <textarea id="revNote"></textarea>
+        </label>
+        <label class="manual-check full">
+          <input id="revNeedsReview" type="checkbox">
+          <span>ยังต้องตรวจสอบต่อ</span>
+        </label>
+        <div class="full ocr-text" id="reviewOcrText"></div>
+        <div class="review-actions full">
+          <button type="button" class="review-btn secondary" id="reviewCancelBtn">ยกเลิก</button>
+          <button type="submit" class="review-btn primary">บันทึกเฉพาะรายการนี้</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
 <div class="app" id="app">
   <div class="scrim" id="scrim"></div>
 
   <!-- SIDEBAR -->
   <aside class="sidebar">
     <div class="brand">
-      <img class="brand-logo" src="data:image/png;base64,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" alt="AIS">
-      <div class="bt">AIS Bill Analyzer<small>วิเคราะห์ใบแจ้งค่าบริการ</small></div>
+      <div class="brand-logo brand-logo-text" aria-hidden="true">MB</div>
+      <div class="bt">My Bill Analyzer<small>วิเคราะห์สลิปด้วย OCR</small></div>
     </div>
 
     <div class="side-sec-t">เมนู</div>
@@ -596,7 +706,7 @@ window.dispatchEvent(new Event("pdfjs-ready"));
       </a>
       <a class="nav-i" data-v="breakdown">
         <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M3 3v18h18"/><rect x="7" y="11" width="3" height="7" rx="1"/><rect x="12" y="7" width="3" height="11" rx="1"/><rect x="17" y="13" width="3" height="5" rx="1"/></svg>
-        <span class="nav-lab">สัดส่วนรายเบอร์</span>
+        <span class="nav-lab">สัดส่วนรายร้านค้า</span>
       </a>
       <a class="nav-i" data-v="insights">
         <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 18h6M10 22h4M12 2a7 7 0 0 0-4 12.74c.6.5 1 1.2 1 2.01V17h6v-.25c0-.81.4-1.51 1-2.01A7 7 0 0 0 12 2z"/></svg>
@@ -605,6 +715,10 @@ window.dispatchEvent(new Event("pdfjs-ready"));
       <a class="nav-i" data-v="structure">
         <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 9v12"/></svg>
         <span class="nav-lab">โครงสร้างค่าใช้จ่าย</span>
+      </a>
+      <a class="nav-i" data-v="banks">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M3 10h18L12 4 3 10z"/><path d="M5 10v8M9 10v8M15 10v8M19 10v8M3 18h18M2 21h20"/></svg>
+        <span class="nav-lab">แยกตามธนาคาร</span>
       </a>
       <a class="nav-i" data-v="watch">
         <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><path d="M12 9v4M12 17h.01"/></svg>
@@ -625,10 +739,10 @@ window.dispatchEvent(new Event("pdfjs-ready"));
         <span class="field-lab">เพิ่ม/อัปเดตข้อมูล</span>
         <button class="upload-btn" id="uploadBtn">
           <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
-          <span class="ub-lab">อัปโหลดใบแจ้งหนี้ AIS</span>
+          <span class="ub-lab">อัปโหลดสลิป</span>
         </button>
-        <input type="file" id="fileInput" accept=".pdf,.zip" multiple style="display:none">
-        <div class="upload-hint ctrl-full">รับ PDF (ใบละเบอร์) หลายไฟล์ หรือ .zip ทั้งเดือน</div>
+        <input type="file" id="fileInput" accept=".jpg,.jpeg,.png,.webp,.bmp,.gif,.pdf,.zip" multiple style="display:none">
+        <div class="upload-hint ctrl-full">รับรูปจากมือถือ (.jpg/.png/.webp), PDF หรือ .zip</div>
         <button class="clear-btn" id="clearBtn">
           <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M10 11v6M14 11v6"/></svg>
           <span class="ub-lab">ล้างข้อมูล / เริ่มใหม่</span>
@@ -637,15 +751,15 @@ window.dispatchEvent(new Event("pdfjs-ready"));
     </div>
 
     <div class="side-foot">
-      ข้อมูล: ใบแจ้งค่าบริการ AIS · รวม VAT 7%<br>
+      ข้อมูล: สลิปชำระเงินอ่านด้วย OCR<br>
       <span id="dataFoot">ข้อมูลตัวอย่าง — กดล้างเพื่อเริ่มใช้งาน</span>
     </div>
     <div class="credit">
       <img class="credit-logo" src="data:image/png;base64,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" alt="">
-      <div class="credit-txt">made by <b>mojak yulken</b><br>May 2026 · v4.0 public</div>
+      <div class="credit-txt">made by <b>9Ken</b><br>May 2026 · v1.2</div>
     </div>
     <div class="credit-contact">
-      ติดต่อผู้จัดทำ <a href="mailto:piriya2544@gmail.com">piriya2544@gmail.com</a><br>เพื่อแจ้งปัญหาหรือแนะนำให้ปรับปรุงแก้ไข
+      ติดต่อผู้จัดทำ <a href="mailto:ken@nmu.ac.th">ken@nmu.ac.th</a><br>เพื่อแจ้งปัญหาหรือแนะนำให้ปรับปรุงแก้ไข
     </div>
   </aside>
 
@@ -655,10 +769,10 @@ window.dispatchEvent(new Event("pdfjs-ready"));
       <div class="burger" id="burger" title="ย่อ/ขยายเมนู">
         <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
       </div>
-      <div class="tb-title" id="tbTitle">ภาพรวม<small id="tbSub">สรุปค่าใช้จ่ายโทรศัพท์รายหมายเลข</small></div>
+      <div class="tb-title" id="tbTitle">ภาพรวม<small id="tbSub">สรุปค่าใช้จ่ายจาก OCR Slip</small></div>
       <div class="tb-spacer"></div>
       <div class="tb-range">
-        <span class="tb-range-lab">รอบบิล</span>
+        <span class="tb-range-lab">ช่วงเวลา</span>
         <select class="field" id="drFrom"></select>
         <span class="tb-range-sep">–</span>
         <select class="field" id="drTo"></select>
@@ -675,13 +789,13 @@ window.dispatchEvent(new Event("pdfjs-ready"));
         <div class="vhead">
           <div class="vk">Executive Summary</div>
           <h1>ภาพรวมค่าใช้จ่าย</h1>
-          <p>สรุปยอดค่าบริการโทรศัพท์ AIS ของทุกหมายเลขในแต่ละรอบบิล — แตกโครงสร้างค่าใช้จ่าย วิเคราะห์แนวโน้ม และจุดที่ควรตรวจสอบ อัปโหลดใบแจ้งหนี้ (PDF/ZIP) ที่แถบซ้ายเพื่อใช้กับข้อมูลจริงของคุณ</p>
+          <p>สรุปสลิปชำระเงินจากมือถือด้วย OCR แยกร้านค้า หมวดค่าใช้จ่าย และแนวโน้มรายเดือน อัปโหลดรูปสลิป, PDF หรือ ZIP เพื่อใช้กับข้อมูลจริงของคุณ</p>
         </div>
 
         <div class="kpis" id="kpis"></div>
 
         <div class="glass card">
-          <div class="card-t"><span>ยอดรวมรายเดือน (บาท · รวม VAT)</span><span id="mc-range"></span></div>
+          <div class="card-t"><span id="mc-title">ยอดใช้จ่ายรายเดือน (บาท)</span><span id="mc-range"></span></div>
           <div class="mchart" id="mchart"></div>
           <div style="display:flex;justify-content:space-around;margin-top:12px" id="mxlabs"></div>
         </div>
@@ -692,13 +806,13 @@ window.dispatchEvent(new Event("pdfjs-ready"));
         <div class="vhead">
           <div class="vk">Heatmap Table</div>
           <h1>ตารางความหนาแน่น</h1>
-          <p>แต่ละหมายเลข (แถว) เทียบทุกเดือน (คอลัมน์) — สีพื้นยิ่งเข้มยิ่งค่าใช้จ่ายสูง อ่านตัวเลขจริงได้พร้อมกัน คลิกหัวคอลัมน์เพื่อจัดเรียง พิมพ์ในช่องค้นหาเพื่อกรองหมายเลข มุมมองนี้รองรับได้ถึง 12 เดือนในพื้นที่เท่าเดิม</p>
+          <p>แต่ละร้านค้าหรือผู้รับเงิน (แถว) เทียบทุกเดือน (คอลัมน์) สีพื้นยิ่งเข้มยิ่งใช้จ่ายสูง ค้นหาเพื่อกรองร้านค้า หมวด หรือช่องทางชำระเงินได้ทันที</p>
         </div>
 
         <div class="glass card">
           <div class="card-t">
             <div class="tbl-tools">
-              <input class="search" id="hmSearch" placeholder="ค้นหาชื่อ / เบอร์…">
+              <input class="search" id="hmSearch" placeholder="ค้นหาร้านค้า / หมวด…">
             </div>
             <span class="scale">น้อย<span class="grad"></span>มาก</span>
           </div>
@@ -711,13 +825,13 @@ window.dispatchEvent(new Event("pdfjs-ready"));
       <!-- VIEW 3: BREAKDOWN (stacked bar) -->
       <section class="view" id="v-breakdown">
         <div class="vhead">
-          <div class="vk">Per-number Breakdown</div>
-          <h1>สัดส่วนรายเบอร์</h1>
-          <p>ยอดรวมสะสมของแต่ละหมายเลข เรียงจากสูงสุดไปต่ำสุด — แต่ละแท่งแบ่งสีตามเดือน ความยาวรวม = ยอดทั้งหมด ขนาดแต่ละช่วง = สัดส่วนของเดือนนั้น เดือนไหนพุ่งจะเห็นช่วงสีนั้นป่องออกมาทันที</p>
+          <div class="vk">Payee Breakdown</div>
+          <h1>สัดส่วนรายร้านค้า</h1>
+          <p>ยอดรวมสะสมของแต่ละร้านค้าหรือผู้รับเงิน เรียงจากสูงสุดไปต่ำสุด แต่ละแท่งแบ่งสีตามเดือนเพื่อเห็นทันทีว่าเดือนไหนเป็นตัวเร่งค่าใช้จ่าย</p>
         </div>
 
         <div class="glass card">
-          <div class="card-t"><span>ยอดรวมต่อหมายเลข แบ่งตามเดือน</span><span id="sb-range"></span></div>
+          <div class="card-t"><span>ยอดรวมต่อร้านค้า แบ่งตามเดือน</span><span id="sb-range"></span></div>
           <div class="sb-leg" id="sbLeg"></div>
           <div class="sblist" id="sblist"></div>
         </div>
@@ -728,7 +842,7 @@ window.dispatchEvent(new Event("pdfjs-ready"));
         <div class="vhead">
           <div class="vk">Key Findings</div>
           <h1>ข้อสังเกตสำคัญ</h1>
-          <p>สรุปประเด็นเด่นจากข้อมูลในช่วงที่เลือก — แสดงเป็นภาพเพื่อให้เห็นได้เร็วกว่าตัวหนังสือ ตัวเลขทั้งหมดปรับตามช่วงรอบบิลที่เลือกในแถบซ้าย</p>
+          <p>สรุปประเด็นเด่นจากข้อมูลในช่วงที่เลือก แสดงเป็นภาพเพื่อให้เห็นแนวโน้มร้านค้า หมวด และยอดที่ควรตรวจสอบได้เร็วขึ้น</p>
         </div>
 
         <div class="ins-cards" id="insCards"></div>
@@ -743,7 +857,7 @@ window.dispatchEvent(new Event("pdfjs-ready"));
           </div>
 
           <div class="glass card">
-            <div class="card-t"><span id="hbarsTitle">หมายเลขที่ใช้สูงสุด</span><span>เทียบเส้นค่าเฉลี่ยกลุ่ม</span></div>
+            <div class="card-t"><span id="hbarsTitle">ร้านค้าที่ใช้จ่ายสูงสุด</span><span>เทียบเส้นค่าเฉลี่ยกลุ่ม</span></div>
             <div class="hbars" id="hbars"></div>
           </div>
         </div>
@@ -759,7 +873,7 @@ window.dispatchEvent(new Event("pdfjs-ready"));
         <div class="vhead">
           <div class="vk">Cost Structure</div>
           <h1>โครงสร้างค่าใช้จ่าย</h1>
-          <p>แตกยอดที่เรียกเก็บจริงออกเป็นหมวด — ค่าแพ็กเกจ (คงที่) / ค่าบริการส่วนเกิน / SMS+บริการเสริม / VAT — เพื่อให้เห็นว่าเงินจ่ายไปกับอะไร พร้อมข้อมูลการใช้งานจริง (นาทีโทร / เน็ต) เป็นข้อมูลประกอบการตัดสินใจปรับแพ็กเกจ ตัวเลขปรับตามช่วงรอบบิลที่เลือก</p>
+          <p>แตกยอดจากสลิปออกเป็นหมวดค่าใช้จ่าย เช่น อาหาร เดินทาง ช้อปปิ้ง สาธารณูปโภค โอนเงิน และอื่นๆ เพื่อดูว่าเงินจ่ายไปกับอะไรในช่วงเวลาที่เลือก</p>
         </div>
 
         <div class="band" id="stBand"></div>
@@ -773,25 +887,42 @@ window.dispatchEvent(new Event("pdfjs-ready"));
 
         <div class="glass card">
           <div class="card-t">
-            <div class="tbl-tools"><input class="search" id="stSearch" placeholder="ค้นหาชื่อ / เบอร์…"></div>
+            <div class="tbl-tools"><input class="search" id="stSearch" placeholder="ค้นหาร้านค้า / หมวด…"></div>
             <span>เงิน: หมวดค่าใช้จ่าย · การใช้งาน: นาที / GB</span>
           </div>
           <div class="tbl-scroll"><table class="dt" id="stTable"></table></div>
         </div>
       </section>
 
-      <!-- VIEW 6: WATCH LIST -->
+      <!-- VIEW 6: BANK SUMMARY -->
+      <section class="view" id="v-banks">
+        <div class="vhead">
+          <div class="vk">Bank Summary</div>
+          <h1>แยกตามธนาคาร</h1>
+          <p>สรุปจำนวน Slip และยอดเงินรวมแยกตามธนาคารที่ OCR ตรวจพบ หรือที่ผู้ใช้งานแก้ไข Manual ไว้ในแต่ละรายการ</p>
+        </div>
+        <div class="band" id="bankBand"></div>
+        <div class="glass card">
+          <div class="card-t">
+            <div class="tbl-tools"><input class="search" id="bankSearch" placeholder="ค้นหาธนาคาร…"></div>
+            <span>ยอดเงินและจำนวน Slip ตามช่วงเวลาที่เลือก</span>
+          </div>
+          <div class="tbl-scroll"><table class="dt" id="bankTable"></table></div>
+        </div>
+      </section>
+
+      <!-- VIEW 7: WATCH LIST -->
       <section class="view" id="v-watch">
         <div class="vhead">
           <div class="vk">Watch List</div>
           <h1>รายการที่ควรตรวจสอบ</h1>
-          <p>คัดเฉพาะหมายเลขที่มีค่าบริการส่วนเกินนอกแพ็กเกจ หรือมีค่าใช้จ่ายพุ่งผิดปกติจากเดือนก่อน — เพื่อให้ผู้บริหารโฟกัสจุดที่ควรพิจารณาปรับแพ็กเกจหรือตรวจสอบการใช้งาน ตัวเลขปรับตามช่วงรอบบิลที่เลือก</p>
+          <p>คัดเฉพาะสลิปที่อ่านจำนวนเงินไม่ได้ หรือมีค่าใช้จ่ายพุ่งผิดปกติจากเดือนก่อน เพื่อช่วยโฟกัสรายการที่ควรตรวจสอบก่อนนำไปสรุปค่าใช้จ่าย</p>
         </div>
         <div class="band" id="wBand"></div>
         <div class="watch" id="watchList"></div>
       </section>
 
-      <!-- VIEW 7: GUIDE -->
+      <!-- VIEW 8: GUIDE -->
       <section class="view" id="v-guide">
         <div class="vhead">
           <div class="vk">User Guide</div>
@@ -801,7 +932,7 @@ window.dispatchEvent(new Event("pdfjs-ready"));
         <div id="guideBody"></div>
       </section>
 
-      <!-- VIEW 8: SETTINGS -->
+      <!-- VIEW 9: SETTINGS -->
       <section class="view" id="v-settings">
         <div class="vhead">
           <div class="vk">Settings</div>
@@ -829,204 +960,421 @@ window.dispatchEvent(new Event("pdfjs-ready"));
 </div>
 
 <script>
-let D = {"rows": [{"phone": "0800000001", "name": "สมชาย", "vals": [1282.93, 1296.31, 2137.86, 1286.14], "total": 6003.24, "avg": 1500.81, "pkg": "5G Max Speed 1199 บ. โทรฟรี 900 นาที, เน็ตไม่จำกัด", "pkgFee": [1199, 1199, 1998, 1199], "sms": [0, 12.5, 0, 3], "over": [0, 0, 0, 0], "callMin": [420, 560, 610, 480], "gb": [45.2, 52.1, 48.0, 40.3]}, {"phone": "0800000002", "name": "สมหญิง", "vals": [640.93, 640.93, 646.28, 640.93], "total": 2569.07, "avg": 642.27, "pkg": "Net Max Speed 599 บ. โทร 300 นาที, เน็ต 16GB", "pkgFee": [599, 599, 599, 599], "sms": [0, 0, 5, 0], "over": [0, 0, 0, 0], "callMin": [120, 98, 145, 110], "gb": [14.1, 15.3, 16.0, 13.2]}, {"phone": "0800000003", "name": "วิชัย", "vals": [426.93, 426.93, 523.23, 837.81], "total": 2214.9, "avg": 553.73, "pkg": "เหมาจ่าย 399 บ. โทรทั่วไทย 250 นาที, เน็ต 2GB", "pkgFee": [399, 399, 489, 783], "sms": [0, 0, 0, 0], "over": [0, 0, 0, 0], "callMin": [230, 245, 310, 506], "gb": [1.6, 1.8, 1.5, 1.7]}, {"phone": "0800000004", "name": "มานี", "vals": [645.21, 642.0, 1496.93, 645.21], "total": 3429.35, "avg": 857.34, "pkg": "Buffet Net 600 บ. โทร 200 นาที, เน็ตไม่จำกัด 6Mbps", "pkgFee": [600, 600, 1399, 600], "sms": [3, 0, 0, 3], "over": [0, 0, 0, 0], "callMin": [55, 62, 80, 58], "gb": [28.4, 30.1, 27.5, 25.0]}], "ml": ["ม.ค.", "ก.พ.", "มี.ค.", "เม.ย."], "mf": ["มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน"], "mt": [2996.0, 3006.17, 4804.3, 3410.09], "grand": 14216.56, "vmax": 2137.86, "vmin": 426.93, "n": 4, "avg_all": 888.53, "year": 2569};
+const MONTH_ABBR=['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+const MONTH_FULL=['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
+const MONTH_COLORS=['#3b82f6','#22a3c4','#a855f7','#ef4444','#f59e0b','#10b981','#ec4899','#6366f1','#14b8a6','#f97316','#8b5cf6','#0ea5e9'];
+const CAT_META={
+  food:{label:'อาหาร/เครื่องดื่ม',color:'#ef4444',hint:'ร้านอาหาร คาเฟ่ เดลิเวอรี่'},
+  transport:{label:'เดินทาง',color:'#f59e0b',hint:'รถไฟฟ้า แท็กซี่ น้ำมัน ทางด่วน'},
+  shopping:{label:'ช้อปปิ้ง',color:'#8b5cf6',hint:'ค้าปลีก Marketplace ร้านสะดวกซื้อ'},
+  utilities:{label:'บิล/สาธารณูปโภค',color:'#3b82f6',hint:'โทรศัพท์ อินเทอร์เน็ต ไฟฟ้า น้ำ'},
+  transfer:{label:'โอนเงิน/พร้อมเพย์',color:'#10b981',hint:'โอนเข้าบุคคลหรือบัญชีทั่วไป'},
+  other:{label:'ทั่วไป',color:'#64748b',hint:'ยังไม่เข้าหมวดชัดเจน'}
+};
+const BANK_META={
+  krungthai:{label:'กรุงไทย / Krungthai',color:'#1d9bd7'},
+  kbank:{label:'กสิกรไทย / KBank',color:'#16a34a'},
+  scb:{label:'ไทยพาณิชย์ / SCB',color:'#6d28d9'},
+  bangkok:{label:'กรุงเทพ / Bangkok Bank',color:'#2563eb'},
+  krungsri:{label:'กรุงศรี / Krungsri',color:'#f59e0b'},
+  ttb:{label:'ทีเอ็มบีธนชาต / ttb',color:'#f97316'},
+  gsb:{label:'ออมสิน / GSB',color:'#ec4899'},
+  uob:{label:'ยูโอบี / UOB',color:'#dc2626'},
+  cimb:{label:'ซีไอเอ็มบีไทย / CIMB',color:'#b91c1c'},
+  baac:{label:'ธ.ก.ส. / BAAC',color:'#047857'},
+  kkp:{label:'เกียรตินาคินภัทร / KKP',color:'#0f766e'},
+  lh:{label:'แลนด์ แอนด์ เฮ้าส์ / LH Bank',color:'#7c3aed'},
+  ibank:{label:'อิสลามแห่งประเทศไทย / iBank',color:'#059669'},
+  unknown:{label:'ไม่ทราบธนาคาร',color:'#64748b'}
+};
+const fmt=n=>(Number(n)||0).toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2});
+const fmt0=n=>(Number(n)||0).toLocaleString('th-TH',{maximumFractionDigits:0});
+const pad=n=>String(n).padStart(2,'0');
+const esc=v=>String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 
-const fmt = n => n.toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2});
-const fmt0 = n => n.toLocaleString('th-TH',{maximumFractionDigits:0});
-let CAUSE = {"0800000001":[{"reasons":[],"extra":[]},{"reasons":[],"extra":[]},{"reasons":["เพิ่มรายการแพ็กเกจโรมมิ่ง/ใช้งานต่างประเทศ 799 บาท"],"extra":[]},{"reasons":[],"extra":[]}],"0800000002":[{"reasons":[],"extra":[]},{"reasons":[],"extra":[]},{"reasons":[],"extra":[]},{"reasons":[],"extra":[]}],"0800000003":[{"reasons":[],"extra":[]},{"reasons":[],"extra":[]},{"reasons":["ค่าโทรส่วนเกินเพิ่มขึ้น 90 บาท"],"extra":["โทรรวมเพิ่ม 65 นาที (245→310)"]},{"reasons":["ค่าโทรส่วนเกินเพิ่มขึ้น 294 บาท"],"extra":["โทรรวมเพิ่ม 196 นาที (310→506)"]}],"0800000004":[{"reasons":[],"extra":[]},{"reasons":[],"extra":[]},{"reasons":["เพิ่มรายการค่าเน็ต/แพ็กเกจเสริมเน็ต 799 บาท"],"extra":[]},{"reasons":[],"extra":[]}]};
-let USAGE = {"0800000001":[{"callMin":420,"night":0,"gb":45.2,"roaming":false,"intl":false},{"callMin":560,"night":0,"gb":52.1,"roaming":false,"intl":false},{"callMin":610,"night":0,"gb":48.0,"roaming":true,"intl":false},{"callMin":480,"night":0,"gb":40.3,"roaming":false,"intl":false}],"0800000002":[{"callMin":120,"night":0,"gb":14.1,"roaming":false,"intl":false},{"callMin":98,"night":0,"gb":15.3,"roaming":false,"intl":false},{"callMin":145,"night":0,"gb":16.0,"roaming":false,"intl":false},{"callMin":110,"night":0,"gb":13.2,"roaming":false,"intl":false}],"0800000003":[{"callMin":230,"night":0,"gb":1.6,"roaming":false,"intl":false},{"callMin":245,"night":0,"gb":1.8,"roaming":false,"intl":false},{"callMin":310,"night":0,"gb":1.5,"roaming":false,"intl":false},{"callMin":506,"night":0,"gb":1.7,"roaming":false,"intl":false}],"0800000004":[{"callMin":55,"night":0,"gb":28.4,"roaming":false,"intl":false},{"callMin":62,"night":0,"gb":30.1,"roaming":false,"intl":false},{"callMin":80,"night":0,"gb":27.5,"roaming":false,"intl":false},{"callMin":58,"night":0,"gb":25.0,"roaming":false,"intl":false}]};
-const MONTH_COLORS = ['#3b82f6','#22a3c4','#a855f7','#ef4444','#f59e0b','#10b981','#ec4899','#6366f1','#14b8a6','#f97316','#8b5cf6','#0ea5e9'];
+injectBrandStyle();
+retitleStaticUI();
 
-const tip = document.getElementById('tip');
+const DEMO_RECORDS=[
+  {key:'demo-001',date:'2026-01-05T09:18:00',amount:125.00,payee:'ร้านกาแฟหน้าออฟฟิศ',category:'food',bank:'krungthai',channel:'OCR',ref:'DEMO001',source:'ตัวอย่าง'},
+  {key:'demo-002',date:'2026-01-08T18:45:00',amount:420.00,payee:'ร้านอาหารเย็น',category:'food',bank:'kbank',channel:'OCR',ref:'DEMO002',source:'ตัวอย่าง'},
+  {key:'demo-003',date:'2026-01-15T13:10:00',amount:1290.00,payee:'ร้านอุปกรณ์ทำงาน',category:'shopping',bank:'scb',channel:'OCR',ref:'DEMO003',source:'ตัวอย่าง'},
+  {key:'demo-004',date:'2026-02-03T08:20:00',amount:280.00,payee:'BTS/MRT',category:'transport',bank:'bangkok',channel:'OCR',ref:'DEMO004',source:'ตัวอย่าง'},
+  {key:'demo-005',date:'2026-02-11T21:05:00',amount:850.00,payee:'Supermarket',category:'shopping',bank:'krungsri',channel:'OCR',ref:'DEMO005',source:'ตัวอย่าง'},
+  {key:'demo-006',date:'2026-02-21T10:30:00',amount:699.00,payee:'ค่าอินเทอร์เน็ตบ้าน',category:'utilities',bank:'ttb',channel:'OCR',ref:'DEMO006',source:'ตัวอย่าง'},
+  {key:'demo-007',date:'2026-03-04T12:05:00',amount:235.00,payee:'ร้านอาหารกลางวัน',category:'food',bank:'krungthai',channel:'OCR',ref:'DEMO007',source:'ตัวอย่าง'},
+  {key:'demo-008',date:'2026-03-16T19:55:00',amount:2450.00,payee:'Marketplace',category:'shopping',bank:'kbank',channel:'OCR',ref:'DEMO008',source:'ตัวอย่าง'},
+  {key:'demo-009',date:'2026-03-26T17:20:00',amount:1200.00,payee:'โอนให้ผู้รับงาน',category:'transfer',bank:'scb',channel:'OCR',ref:'DEMO009',source:'ตัวอย่าง'},
+  {key:'demo-010',date:'2026-04-02T09:12:00',amount:310.00,payee:'Taxi / Ride',category:'transport',bank:'bangkok',channel:'OCR',ref:'DEMO010',source:'ตัวอย่าง'},
+  {key:'demo-011',date:'2026-04-09T20:40:00',amount:540.00,payee:'ร้านอาหารเย็น',category:'food',bank:'kbank',channel:'OCR',ref:'DEMO011',source:'ตัวอย่าง'},
+  {key:'demo-012',date:'2026-04-20T14:15:00',amount:0,payee:'สลิปตัวอย่างอ่านไม่ครบ',category:'other',bank:'unknown',channel:'OCR',ref:'DEMO012',source:'ตัวอย่าง',needsReview:true,note:'ตัวอย่างรายการที่ต้องตรวจสอบยอดเงิน'}
+];
+
+let RECORDS=DEMO_RECORDS.map(normalizeRecord);
+let D=rebuildData(RECORDS);
+let RANGE={from:0,to:D.n-1};
+let OVERVIEW_DRILL_YEAR=null;
+let SORT={key:'total',dir:-1};
+let ST_SORT={key:'total',dir:-1};
+let BANK_SORT={key:'total',dir:-1};
+let currentAccent='blue';
+let isDark=false;
+let pdfjsReady=null;
+
+const tip=document.getElementById('tip');
+const drFrom=document.getElementById('drFrom');
+const drTo=document.getElementById('drTo');
+const app=document.getElementById('app');
+
+function injectBrandStyle(){
+  const style=document.createElement('style');
+  style.textContent='.brand-logo-text{display:grid;place-items:center;font-family:Sora,sans-serif;font-weight:800;color:#fff;background:linear-gradient(135deg,var(--blue),var(--blue-deep));font-size:16px}.brand .bt{white-space:normal}.zero{color:var(--muted)}';
+  document.head.appendChild(style);
+}
+
+function retitleStaticUI(){
+  document.title='My Bill Analyzer';
+  const logo=document.querySelector('.brand-logo');
+  if(logo&&logo.tagName==='IMG'){
+    const div=document.createElement('div');
+    div.className='brand-logo brand-logo-text';
+    div.textContent='MB';
+    logo.replaceWith(div);
+  }
+  const brand=document.querySelector('.brand .bt');
+  if(brand)brand.innerHTML='My Bill Analyzer<small>วิเคราะห์สลิปด้วย OCR</small>';
+  const uploadLabel=document.querySelector('#uploadBtn .ub-lab');
+  if(uploadLabel)uploadLabel.textContent='อัปโหลดสลิป';
+  const hint=document.querySelector('.upload-hint');
+  if(hint)hint.textContent='รับรูปจากมือถือ (.jpg/.png/.webp), PDF หรือ .zip';
+  const fileInput=document.getElementById('fileInput');
+  if(fileInput)fileInput.accept='.jpg,.jpeg,.png,.webp,.bmp,.gif,.pdf,.zip';
+  const dropSub=document.querySelector('#dropOverlay .t2');
+  if(dropSub)dropSub.textContent='รูปสลิป, PDF หรือไฟล์ .zip จากมือถือ';
+  const sideFoot=document.querySelector('.side-foot');
+  if(sideFoot)sideFoot.childNodes[0].nodeValue='ข้อมูล: สลิปชำระเงินอ่านด้วย OCR';
+  const dataFoot=document.getElementById('dataFoot');
+  if(dataFoot)dataFoot.textContent='ข้อมูลตัวอย่าง — อัปโหลดสลิปเพื่อใช้ข้อมูลจริง';
+  setText('#tbSub','สรุปค่าใช้จ่ายจาก OCR Slip');
+  setText('#v-overview .vhead p','สรุปยอดใช้จ่ายจากสลิปชำระเงินทั่วไปด้วย OCR รองรับรูปจากมือถือ, PDF และ ZIP แล้วจัดกลุ่มตามร้านค้า/ผู้รับเงิน หมวดค่าใช้จ่าย และช่วงเดือน');
+  setText('#v-density .vhead p','แต่ละร้านค้าหรือผู้รับเงิน (แถว) เทียบทุกเดือน (คอลัมน์) สีพื้นยิ่งเข้มยิ่งใช้จ่ายสูง คลิกหัวคอลัมน์เพื่อจัดเรียง และค้นหาเพื่อกรองรายการ');
+  setText('#v-breakdown .vhead h1','สัดส่วนรายร้านค้า');
+  setText('#v-breakdown .vhead p','ยอดรวมสะสมของแต่ละร้านค้าหรือผู้รับเงิน เรียงจากสูงสุดไปต่ำสุด แต่ละแท่งแบ่งสีตามเดือน เพื่อเห็นว่าค่าใช้จ่ายกระจุกอยู่ตรงไหน');
+  setText('#hbarsTitle','ร้านค้าที่ใช้จ่ายสูงสุด');
+  setText('#v-structure .vhead p','แตกค่าใช้จ่ายจาก OCR Slip เป็นหมวด เช่น อาหาร เดินทาง ช้อปปิ้ง บิล/สาธารณูปโภค โอนเงิน และทั่วไป เพื่อเห็นว่าเงินจ่ายไปกับอะไร');
+  setText('#v-structure .card-t span','โครงสร้างค่าใช้จ่ายรวม');
+  setText('#v-banks .vhead p','สรุปจำนวน Slip และยอดเงินรวมแยกตามธนาคารที่ OCR ตรวจพบ หรือที่ผู้ใช้งานแก้ไข Manual ไว้ในแต่ละรายการ');
+  setText('#v-watch .vhead p','คัดรายการที่ควรตรวจสอบ เช่น สลิปที่ OCR อ่านข้อมูลไม่ครบ รายการยอดสูงผิดปกติ หรือร้านค้าที่มียอดพุ่งจากเดือนก่อน');
+}
+function setText(sel,text){const el=document.querySelector(sel);if(el)el.textContent=text;}
+
+function normalizeRecord(input){
+  const d=input.date?new Date(input.date):new Date();
+  const safeDate=isNaN(d.getTime())?new Date():d;
+  const year=safeDate.getFullYear();
+  const month=safeDate.getMonth()+1;
+  const period=`${year}-${pad(month)}`;
+  const payee=String(input.payee||input.merchant||'สลิป OCR').trim()||'สลิป OCR';
+  const amount=Number(input.amount)||0;
+  const rawText=input.rawText||'';
+  const category=input.category&&CAT_META[input.category]?input.category:categoryFromText(payee+' '+(input.ocrText||'')+' '+rawText);
+  const bank=input.bank&&BANK_META[input.bank]?input.bank:detectBank([input.bank,input.ocrText,rawText,input.source,input.payee,input.channel].join(' '));
+  return {
+    key:input.key||makeKey(input),
+    date:toLocalISO(safeDate),
+    period,month,year,yearBE:year+543,
+    amount:Math.round(amount*100)/100,
+    payee,
+    category,
+    bank,
+    channel:input.channel||'OCR',
+    ref:input.ref||'',
+    source:input.source||'',
+    rawText,
+    ocrText:input.ocrText||'',
+    slipImage:input.slipImage||'',
+    needsReview:!!input.needsReview||amount<=0,
+    note:input.note||'',
+    manualEdited:!!input.manualEdited,
+    manualUpdatedAt:input.manualUpdatedAt||''
+  };
+}
+function makeKey(input){
+  return 'slip-'+simpleHash(slipIdentity(input));
+}
+function slipIdentity(input){
+  const ref=String(input.ref||'').trim();
+  if(ref)return 'ref:'+ref;
+  const ocr=String(input.ocrText||'').replace(/\s+/g,' ').trim();
+  if(ocr)return 'ocr:'+simpleHash(ocr);
+  const raw=String(input.rawText||'').trim();
+  if(raw)return 'text:'+simpleHash(raw);
+  return ['manual',input.date||'',Number(input.amount)||0,cleanText(input.payee||'')].join('|');
+}
+function simpleHash(str){
+  let h=2166136261;
+  for(let i=0;i<str.length;i++){h^=str.charCodeAt(i);h=Math.imul(h,16777619);}
+  return (h>>>0).toString(36);
+}
+function toLocalISO(d){
+  return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+}
+function periodShort(p){
+  const [y,m]=p.split('-').map(Number);
+  return `${MONTH_ABBR[m-1]} ${String(y+543).slice(-2)}`;
+}
+function periodFull(p){
+  const [y,m]=p.split('-').map(Number);
+  return `${MONTH_FULL[m-1]} ${y+543}`;
+}
+function prettyDate(iso){
+  return new Date(iso).toLocaleString('th-TH',{day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});
+}
+function categoryFromText(text){
+  const s=String(text||'').toLowerCase();
+  if(/กาแฟ|cafe|coffee|อาหาร|restaurant|food|kitchen|ข้าว|ชาบู|pizza|delivery|lineman|grabfood/.test(s))return 'food';
+  if(/taxi|mrt|bts|grab|bolt|รถ|น้ำมัน|fuel|ทางด่วน|เดินทาง|parking/.test(s))return 'transport';
+  if(/shopee|lazada|market|mall|supermarket|lotus|bigc|7-?eleven|shopping|shop|store|ซื้อ/.test(s))return 'shopping';
+  if(/ไฟฟ้า|ประปา|internet|โทรศัพท์|ค่าเน็ต|telecom|mobile|bill|utility|water|electric/.test(s))return 'utilities';
+  if(/promptpay|พร้อมเพย์|transfer|โอน|บัญชี|bank|ธนาคาร/.test(s))return 'transfer';
+  return 'other';
+}
+function bankLabel(id){return (BANK_META[id]||BANK_META.unknown).label;}
+function bankColor(id){return (BANK_META[id]||BANK_META.unknown).color;}
+function detectBank(text){
+  const s=String(text||'').toLowerCase();
+  const c=s.replace(/\s+/g,'');
+  if(/krungthai|กรุงไทย|\bktb\b/.test(s))return 'krungthai';
+  if(/kasikorn|kbank|กสิกร/.test(s))return 'kbank';
+  if(/scb|siamcommercial|ไทยพาณิชย์/.test(s))return 'scb';
+  if(/bangkokbank|bangkok bank|\bbbl\b|ธนาคารกรุงเทพ/.test(s)||/ธนาคารกรุงเทพ/.test(c))return 'bangkok';
+  if(/krungsri|bay|กรุงศรี|อยุธยา/.test(s))return 'krungsri';
+  if(/\bttb\b|tmb|thanachart|ธนชาต|ทหารไทย/.test(s))return 'ttb';
+  if(/gsb|ออมสิน/.test(s))return 'gsb';
+  if(/\buob\b|ยูโอบี/.test(s))return 'uob';
+  if(/cimb|ซีไอเอ็มบี/.test(s))return 'cimb';
+  if(/baac|ธ\.?\s*ก\.?\s*ส|เพื่อการเกษตร/.test(s))return 'baac';
+  if(/kkp|kiatnakin|เกียรตินาคิน/.test(s))return 'kkp';
+  if(/lhbank|แลนด์\s*แอนด์\s*เฮ้าส์|แลนด์แอนด์เฮ้าส์/.test(s))return 'lh';
+  if(/ibank|islamic|อิสลาม/.test(s))return 'ibank';
+  return 'unknown';
+}
+
+function rebuildData(records){
+  const normalized=records.map(normalizeRecord).sort((a,b)=>a.date.localeCompare(b.date));
+  const periods=[...new Set(normalized.map(r=>r.period))].sort();
+  const rowsByPayee={};
+  normalized.forEach(r=>{(rowsByPayee[r.payee]=rowsByPayee[r.payee]||[]).push(r);});
+  const rows=Object.keys(rowsByPayee).sort((a,b)=>a.localeCompare(b,'th')).map(payee=>{
+    const recs=rowsByPayee[payee];
+    const vals=periods.map(p=>round2(recs.filter(r=>r.period===p).reduce((s,r)=>s+r.amount,0)));
+    const txCount=periods.map(p=>recs.filter(r=>r.period===p).length);
+    const total=round2(vals.reduce((s,v)=>s+v,0));
+    const cat=dominantCategory(recs);
+    const byPeriod=periods.map(p=>recs.filter(r=>r.period===p));
+    return {id:payee,name:payee,phone:CAT_META[cat].label,category:cat,vals,total,avg:periods.length?total/periods.length:0,count:recs.length,txCount,_records:byPeriod,allRecords:recs};
+  });
+  const mt=periods.map((p,i)=>round2(rows.reduce((s,r)=>s+r.vals[i],0)));
+  const grand=round2(mt.reduce((s,v)=>s+v,0));
+  const allv=rows.flatMap(r=>r.vals).filter(v=>v>0);
+  return {records:normalized,rows,periods,ml:periods.map(periodShort),mf:periods.map(periodFull),mt,grand,vmax:Math.max(...allv,1),vmin:Math.min(...allv,0),n:periods.length||1,avg_all:rows.length&&periods.length?grand/(rows.length*periods.length):0};
+}
+function round2(n){return Math.round((Number(n)||0)*100)/100;}
+function dominantCategory(records){
+  const totals={};
+  records.forEach(r=>totals[r.category]=(totals[r.category]||0)+r.amount);
+  return Object.keys(totals).sort((a,b)=>totals[b]-totals[a])[0]||'other';
+}
+function activeMonthIdx(){
+  const a=[];
+  for(let i=RANGE.from;i<=RANGE.to&&i<D.periods.length;i++)a.push(i);
+  return a;
+}
+function computeView(){
+  const idx=activeMonthIdx();
+  const activePeriods=new Set(idx.map(i=>D.periods[i]));
+  const rows=D.rows.map(r=>{
+    const vals=idx.map(i=>r.vals[i]||0);
+    const records=r.allRecords.filter(x=>activePeriods.has(x.period));
+    const total=round2(vals.reduce((s,v)=>s+v,0));
+    return {...r,vals,total,avg:idx.length?total/idx.length:0,count:records.length,_idx:idx,activeRecords:records};
+  }).filter(r=>r.count>0||r.total>0);
+  const mt=idx.map(i=>D.mt[i]||0);
+  const records=D.records.filter(r=>activePeriods.has(r.period));
+  const grand=round2(mt.reduce((s,v)=>s+v,0));
+  let vmin=Infinity,vmax=-Infinity;
+  rows.forEach(r=>r.vals.forEach(v=>{if(v<vmin)vmin=v;if(v>vmax)vmax=v;}));
+  if(!isFinite(vmin))vmin=0;if(!isFinite(vmax))vmax=1;
+  return {rows,records,idx,ml:idx.map(i=>D.ml[i]),mf:idx.map(i=>D.mf[i]),mt,grand,vmin,vmax,n:idx.length||1,avg_all:rows.length&&idx.length?grand/(rows.length*idx.length):0,slipCount:records.length,needsReview:records.filter(r=>r.needsReview).length};
+}
+
 function showTip(e,html){tip.innerHTML=html;tip.style.opacity=1;moveTip(e);}
 function moveTip(e){tip.style.left=(e.clientX+14)+'px';tip.style.top=(e.clientY+14)+'px';}
 function hideTip(){tip.style.opacity=0;}
 
-/* ============ STATE: date range ============ */
-let RANGE = {from:0, to:D.n-1};
-
-function activeMonthIdx(){const a=[];for(let i=RANGE.from;i<=RANGE.to;i++)a.push(i);return a;}
-
-function computeView(){
-  const idx = activeMonthIdx();
-  const rows = D.rows.map(r=>{
-    const vals = idx.map(i=>r.vals[i]);
-    const total = vals.reduce((s,v)=>s+v,0);
-    return {phone:r.phone, name:r.name, vals, total, avg: total/vals.length, _idx:idx,
-      pkg:r.pkg||'',
-      pkgFee: idx.map(i=>r.pkgFee?r.pkgFee[i]:0),
-      sms: idx.map(i=>r.sms?r.sms[i]:0),
-      over: idx.map(i=>r.over?r.over[i]:0),
-      callMin: idx.map(i=>r.callMin?r.callMin[i]:0),
-      gb: idx.map(i=>r.gb?r.gb[i]:0)};
-  });
-  const mt = idx.map(i=>D.mt[i]);
-  const grand = mt.reduce((s,v)=>s+v,0);
-  let vmin=Infinity,vmax=-Infinity;
-  rows.forEach(r=>r.vals.forEach(v=>{if(v<vmin)vmin=v;if(v>vmax)vmax=v;}));
-  return {rows, idx, ml:idx.map(i=>D.ml[i]), mf:idx.map(i=>D.mf[i]), mt, grand, vmin, vmax, n:idx.length,
-          avg_all: grand/((rows.length||1)*idx.length)};
-}
-
-/* ============ Date range picker ============ */
-const drFrom=document.getElementById('drFrom'), drTo=document.getElementById('drTo');
 function buildRangePicker(){
-  drFrom.innerHTML=''; drTo.innerHTML='';
+  drFrom.innerHTML='';drTo.innerHTML='';
   D.mf.forEach((m,i)=>{
-    drFrom.insertAdjacentHTML('beforeend',`<option value="${i}">${m} ${D.year||2569}</option>`);
-    drTo.insertAdjacentHTML('beforeend',`<option value="${i}">${m} ${D.year||2569}</option>`);
+    drFrom.insertAdjacentHTML('beforeend',`<option value="${i}">${esc(m)}</option>`);
+    drTo.insertAdjacentHTML('beforeend',`<option value="${i}">${esc(m)}</option>`);
   });
-  RANGE={from:0,to:D.n-1};
-  drFrom.value=0; drTo.value=D.n-1;
+  RANGE={from:0,to:Math.max(D.n-1,0)};
+  OVERVIEW_DRILL_YEAR=null;
+  drFrom.value=RANGE.from;drTo.value=RANGE.to;
 }
-buildRangePicker();
 function onRange(){
-  let f=+drFrom.value, t=+drTo.value;
-  if(f>t){ if(this===drFrom){t=f;drTo.value=t;} else {f=t;drFrom.value=f;} }
+  let f=+drFrom.value,t=+drTo.value;
+  if(f>t){if(this===drFrom){t=f;drTo.value=t;}else{f=t;drFrom.value=f;}}
   RANGE={from:f,to:t};
+  OVERVIEW_DRILL_YEAR=null;
   renderAll();
 }
 drFrom.addEventListener('change',onRange);
 drTo.addEventListener('change',onRange);
 
-/* ============ PERIOD ============ */
 function setPeriod(V){
   const el=document.getElementById('period');
-  if(el) el.textContent = V.mf[0]+' – '+V.mf[V.n-1]+' '+(D.year||2569);
+  if(el)el.textContent=V.mf[0]+(V.n>1?' – '+V.mf[V.n-1]:'');
 }
-
-/* ============ KPIs ============ */
 function renderKPIs(V){
-  const peakIdx = V.mt.indexOf(Math.max(...V.mt));
-  const srt=[...V.rows].sort((a,b)=>b.total-a.total);
-  const hi=srt[0], lo=srt[srt.length-1];
-  const kpis=[
-    {l:'ยอดรวมสะสม',v:fmt0(V.grand),u:'บาท',n:`${V.n} เดือน · ${V.rows.length*V.n} ใบแจ้งหนี้`,cls:'bl',
-     ic:'<path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>'},
-    {l:'เฉลี่ยต่อเดือน',v:fmt0(V.grand/V.n),u:'บาท',n:`ทั้ง ${V.rows.length} หมายเลขรวมกัน`,cls:'',
-     ic:'<rect x="3" y="4" width="18" height="18" rx="2"/><path d="M3 10h18M8 2v4M16 2v4"/>'},
-    {l:'เดือนที่ใช้สูงสุด',v:V.ml[peakIdx],u:'',n:fmt0(V.mt[peakIdx])+' บาท',cls:'hot',
-     ic:'<path d="M3 17l6-6 4 4 8-8M21 7v6M21 7h-6"/>'},
-    {l:'เฉลี่ยต่อเลข/เดือน',v:fmt0(V.avg_all),u:'บาท',n:`สูงสุด ${hi.name} · ต่ำสุด ${lo.name}`,cls:'',
-     ic:'<circle cx="9" cy="7" r="4"/><path d="M3 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2M16 3.13a4 4 0 0 1 0 7.75M21 21v-2a4 4 0 0 0-3-3.87"/>'},
-  ];
-  const el=document.getElementById('kpis'); el.innerHTML='';
-  kpis.forEach(k=>{
-    el.insertAdjacentHTML('beforeend',
-      `<div class="glass kpi ${k.cls}">
-        <div class="ic"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24">${k.ic}</svg></div>
-        <div class="kl">${k.l}</div>
-        <div class="kv">${k.v}${k.u?`<span class="u">${k.u}</span>`:''}</div>
-        <div class="kn">${k.n}</div>
-      </div>`);
-  });
-}
-
-/* ============ Monthly bars ============ */
-function renderBars(V){
-  const mc=document.getElementById('mchart'), mx=document.getElementById('mxlabs');
-  mc.innerHTML=''; mx.innerHTML='';
-  document.getElementById('mc-range').textContent = V.n+' เดือน';
   const peakIdx=V.mt.indexOf(Math.max(...V.mt));
-  const maxMT=Math.max(...V.mt);
-  V.mt.forEach((v,i)=>{
-    const h=Math.round(v/maxMT*230);
-    const peak=i===peakIdx?' peak':'';
-    mc.insertAdjacentHTML('beforeend',
-      `<div class="mg"><div class="mbar${peak}" data-h="${h}" style="height:0"><div class="v">${fmt0(v)}</div></div></div>`);
-    mx.insertAdjacentHTML('beforeend',
-      `<div style="flex:1;max-width:140px;text-align:center"><div class="mxlab"><div class="m">${V.mf[i]}</div><div class="y">2569</div></div></div>`);
-  });
-  requestAnimationFrame(()=>setTimeout(()=>{
-    mc.querySelectorAll('.mbar').forEach(b=>b.style.height=b.dataset.h+'px');
-  },80));
+  const srt=[...V.rows].sort((a,b)=>b.total-a.total);
+  const top=srt[0]||{name:'-',total:0};
+  const kpis=[
+    {l:'ยอดใช้จ่ายรวม',v:fmt0(V.grand),u:'บาท',n:`${V.slipCount} สลิป · ${V.n} เดือน`,cls:'bl',ic:'<path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>'},
+    {l:'เฉลี่ยต่อเดือน',v:fmt0(V.grand/V.n),u:'บาท',n:`รวม ${V.rows.length} ร้านค้า/ผู้รับเงิน`,cls:'',ic:'<rect x="3" y="4" width="18" height="18" rx="2"/><path d="M3 10h18M8 2v4M16 2v4"/>'},
+    {l:'เดือนที่ใช้สูงสุด',v:V.ml[peakIdx]||'-',u:'',n:fmt0(V.mt[peakIdx]||0)+' บาท',cls:'hot',ic:'<path d="M3 17l6-6 4 4 8-8M21 7v6M21 7h-6"/>'},
+    {l:'ต้องตรวจสอบ',v:V.needsReview,u:'สลิป',n:top.name==='-'?'ยังไม่มีข้อมูล':`ยอดสูงสุด: ${top.name}`,cls:V.needsReview?'hot':'',ic:'<path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><path d="M12 9v4M12 17h.01"/>'}
+  ];
+  const el=document.getElementById('kpis');el.innerHTML='';
+  kpis.forEach(k=>el.insertAdjacentHTML('beforeend',`<div class="glass kpi ${k.cls}"><div class="ic"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24">${k.ic}</svg></div><div class="kl">${esc(k.l)}</div><div class="kv">${esc(k.v)}${k.u?`<span class="u">${esc(k.u)}</span>`:''}</div><div class="kn">${esc(k.n)}</div></div>`));
 }
-
-/* ============ Insights (visual) ============ */
+function chartSlipLabel(count){return `${count} สลิป`;}
+function chartBarHeight(value,maxValue){
+  if(!value)return 2;
+  return Math.max(7,Math.round(value/maxValue*230));
+}
+function monthlyChartItems(V){
+  return V.mt.map((value,i)=>{
+    const period=D.periods[V.idx[i]];
+    const count=V.records.filter(r=>r.period===period).length;
+    return {type:'month',label:V.ml[i],fullLabel:V.mf[i],value,count};
+  });
+}
+function yearlyChartItems(V){
+  const byYear={};
+  V.records.forEach(r=>{
+    const y=r.year;
+    if(!byYear[y])byYear[y]={type:'year',year:y,label:String(y+543),fullLabel:`ปี ${y+543}`,value:0,count:0};
+    byYear[y].value=round2(byYear[y].value+r.amount);
+    byYear[y].count++;
+  });
+  return Object.keys(byYear).sort((a,b)=>Number(a)-Number(b)).map(y=>byYear[y]);
+}
+function drillMonthItems(year){
+  return Array.from({length:12},(_,i)=>{
+    const month=i+1;
+    const period=`${year}-${pad(month)}`;
+    const recs=D.records.filter(r=>r.period===period);
+    const value=round2(recs.reduce((s,r)=>s+r.amount,0));
+    return {type:'month',label:`${MONTH_ABBR[i]} ${String(year+543).slice(-2)}`,fullLabel:`${MONTH_FULL[i]} ${year+543}`,value,count:recs.length};
+  });
+}
+function setChartHeader(mode,V,year){
+  const titleEl=document.getElementById('mc-title');
+  const rangeEl=document.getElementById('mc-range');
+  if(mode==='year'){
+    if(titleEl)titleEl.textContent='ยอดใช้จ่ายรายปี (บาท)';
+    rangeEl.textContent=`${V.n} เดือน · คลิกปีเพื่อดูรายเดือน`;
+    return;
+  }
+  if(mode==='drill'){
+    if(titleEl)titleEl.textContent=`ยอดใช้จ่ายรายเดือน ปี ${year+543} (บาท)`;
+    rangeEl.innerHTML=`ปี ${year+543} · 12 เดือน <button type="button" class="chart-back" id="chartBackBtn">กลับรายปี</button>`;
+    const btn=document.getElementById('chartBackBtn');
+    if(btn)btn.addEventListener('click',()=>{OVERVIEW_DRILL_YEAR=null;renderBars(computeView());});
+    return;
+  }
+  if(titleEl)titleEl.textContent='ยอดใช้จ่ายรายเดือน (บาท)';
+  rangeEl.textContent=V.n+' เดือน';
+}
+function renderChartBars(mc,mx,items,mode){
+  const values=items.map(x=>x.value);
+  const maxValue=Math.max(...values,1);
+  const peakIdx=maxValue>0?values.indexOf(maxValue):-1;
+  items.forEach((item,i)=>{
+    const h=chartBarHeight(item.value,maxValue);
+    const isClickable=item.type==='year';
+    const title=`${item.fullLabel}: ${fmt(item.value)} บาท · ${chartSlipLabel(item.count)}`;
+    mc.insertAdjacentHTML('beforeend',`<div class="mg"><div class="mbar${i===peakIdx?' peak':''}${isClickable?' clickable':''}${item.value<=0?' zero':''}" data-h="${h}" ${isClickable?`data-year="${item.year}" role="button" tabindex="0" aria-label="ดูรายเดือนปี ${item.year+543}"`:''} title="${esc(title)}" style="height:0"><div class="v">${fmt0(item.value)}</div></div></div>`);
+    mx.insertAdjacentHTML('beforeend',`<div style="flex:1;max-width:140px;text-align:center"><div class="mxlab"><div class="m">${esc(item.label)}</div><div class="y">${esc(chartSlipLabel(item.count))}</div></div></div>`);
+  });
+  mc.querySelectorAll('.mbar.clickable[data-year]').forEach(b=>{
+    const open=()=>{OVERVIEW_DRILL_YEAR=Number(b.dataset.year);renderBars(computeView());};
+    b.addEventListener('click',open);
+    b.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();open();}});
+  });
+  requestAnimationFrame(()=>setTimeout(()=>mc.querySelectorAll('.mbar').forEach(b=>b.style.height=b.dataset.h+'px'),80));
+}
+function renderBars(V){
+  const mc=document.getElementById('mchart'),mx=document.getElementById('mxlabs');
+  mc.innerHTML='';mx.innerHTML='';
+  const years=yearlyChartItems(V);
+  const useYearMode=V.n>12;
+  if(!useYearMode)OVERVIEW_DRILL_YEAR=null;
+  const canDrill=useYearMode&&OVERVIEW_DRILL_YEAR&&years.some(y=>y.year===OVERVIEW_DRILL_YEAR);
+  const mode=useYearMode?(canDrill?'drill':'year'):'month';
+  const items=mode==='year'?years:(mode==='drill'?drillMonthItems(OVERVIEW_DRILL_YEAR):monthlyChartItems(V));
+  setChartHeader(mode,V,OVERVIEW_DRILL_YEAR);
+  mc.classList.toggle('year-mode',mode==='year');
+  mc.classList.toggle('compact',items.length>8);
+  mx.style.gap=items.length>8?'10px':'20px';
+  if(!items.length){
+    mc.insertAdjacentHTML('beforeend','<div class="chart-empty">ยังไม่มีข้อมูลในช่วงเวลานี้</div>');
+    return;
+  }
+  renderChartBars(mc,mx,items,mode);
+}
 function renderInsights(V){
   const srt=[...V.rows].sort((a,b)=>b.total-a.total);
-  const peakIdx=V.mt.indexOf(Math.max(...V.mt)), lowIdx=V.mt.indexOf(Math.min(...V.mt));
-  const topN=Math.min(6,Math.max(1,Math.ceil(V.rows.length/2)));
-  const top6=srt.slice(0,topN), top6sum=top6.reduce((s,r)=>s+r.total,0), top6pct=(top6sum/V.grand*100);
-  const otherN=V.rows.length-topN;
-  const otherSum=V.grand-top6sum;
+  const topN=Math.min(6,Math.max(1,Math.ceil(srt.length/2)||1));
+  const top=srt.slice(0,topN);
+  const topSum=top.reduce((s,r)=>s+r.total,0);
+  const topPct=V.grand?topSum/V.grand*100:0;
+  const otherN=Math.max(V.rows.length-topN,0);
+  const otherSum=V.grand-topSum;
   let bigJump={name:'',amt:0,from:'',to:'',fromV:0,toV:0};
-  V.rows.forEach(r=>{for(let i=1;i<r.vals.length;i++){const dd=r.vals[i]-r.vals[i-1];
-    if(Math.abs(dd)>Math.abs(bigJump.amt))bigJump={name:r.name,amt:dd,from:V.mf[i-1],to:V.mf[i],fromV:r.vals[i-1],toV:r.vals[i]};}});
-
-  /* --- summary cards --- */
-  const avgMult=(srt[0].avg/V.avg_all).toFixed(1);
+  V.rows.forEach(r=>{for(let i=1;i<r.vals.length;i++){const d=r.vals[i]-r.vals[i-1];if(Math.abs(d)>Math.abs(bigJump.amt))bigJump={name:r.name,amt:d,from:V.mf[i-1],to:V.mf[i],fromV:r.vals[i-1],toV:r.vals[i]};}});
+  const ic=document.getElementById('insCards');ic.innerHTML='';
   const cards=[
-    {cls:'bl',l:'การกระจุกตัว',v:top6pct.toFixed(1),u:'%',d:`${topN} หมายเลขที่ใช้สูงสุดรวมกัน คิดเป็น <b>${top6pct.toFixed(1)}%</b> ของยอดทั้งหมด (${fmt0(top6sum)} บาท)`},
-    {cls:'deep',l:'หมายเลขอันดับ 1',v:fmt0(srt[0].total),u:'บาท',d:`<b>${srt[0].name}</b> เฉลี่ย ${fmt0(srt[0].avg)} บาท/เดือน สูงกว่าค่าเฉลี่ยกลุ่มราว <b>${avgMult} เท่า</b>`},
-    {cls:'red',l:V.n>1?'ผลต่างเดือนสูง-ต่ำ':'รอบบิลเดียว',
-      v: V.n>1?fmt0(V.mt[peakIdx]-V.mt[lowIdx]):fmt0(V.grand), u:'บาท',
-      d: V.n>1?`สูงสุด<b>${V.mf[peakIdx]}</b> ต่ำสุด<b>${V.mf[lowIdx]}</b> — ต่างกันน้อย สะท้อนค่าใช้จ่ายค่อนข้างคงที่`:`เดือน${V.mf[0]} ยอดรวมทั้งกลุ่ม`},
+    {cls:'bl',l:'การกระจุกตัว',v:topPct.toFixed(1),u:'%',d:`${topN} ร้านค้าที่ใช้สูงสุดรวมกัน ${fmt0(topSum)} บาท`},
+    {cls:'deep',l:'อันดับ 1',v:fmt0(srt[0]?.total||0),u:'บาท',d:srt[0]?`${srt[0].name} · ${CAT_META[srt[0].category].label}`:'ยังไม่มีข้อมูล'},
+    {cls:'red',l:'สลิปที่ต้องตรวจสอบ',v:V.needsReview,u:'สลิป',d:'QR บางรายการอาจไม่มียอดเงินใน payload จึงต้องตรวจสอบจากภาพสลิป'}
   ];
-  const ic=document.getElementById('insCards'); ic.innerHTML='';
-  cards.forEach(c=>ic.insertAdjacentHTML('beforeend',
-    `<div class="glass ins-card ${c.cls}"><div class="icl">${c.l}</div>
-     <div class="icv">${c.v}<span class="u">${c.u}</span></div><div class="icd">${c.d}</div><div class="bar" style="width:60%"></div></div>`));
-
-  /* --- donut: top6 vs others --- */
+  cards.forEach(c=>ic.insertAdjacentHTML('beforeend',`<div class="glass ins-card ${c.cls}"><div class="icl">${esc(c.l)}</div><div class="icv">${esc(c.v)}<span class="u">${esc(c.u)}</span></div><div class="icd">${esc(c.d)}</div><div class="bar" style="width:60%"></div></div>`));
   const donut=document.getElementById('donut');
-  const R=78, C=2*Math.PI*R, cx=100, cy=100;
-  const p1=top6pct/100, len1=C*p1;
-  donut.innerHTML=`
-    <circle cx="${cx}" cy="${cy}" r="${R}" fill="none" stroke="var(--h1)" stroke-width="26"/>
-    <circle cx="${cx}" cy="${cy}" r="${R}" fill="none" stroke="var(--blue-2)" stroke-width="26"
-      stroke-dasharray="0 ${C}" stroke-linecap="butt" transform="rotate(-90 ${cx} ${cy})">
-      <animate attributeName="stroke-dasharray" from="0 ${C}" to="${len1} ${C-len1}" dur="0.9s" fill="freeze" calcMode="spline" keySplines="0.22 1 0.36 1" keyTimes="0;1"/>
-    </circle>
-    <text class="dt" x="${cx}" y="${cy-2}" text-anchor="middle" dominant-baseline="middle">${top6pct.toFixed(0)}%</text>
-    <text class="ds" x="${cx}" y="${cy+16}" text-anchor="middle">Top ${topN} หมายเลข</text>`;
-  document.getElementById('donutLeg').innerHTML=`
-    <div class="li"><span class="sw" style="background:var(--blue-2)"></span>Top ${topN} หมายเลข<span class="lv">${fmt0(top6sum)}<span class="ls">${top6pct.toFixed(1)}%</span></span></div>`
-    +(otherN>0?`<div class="li"><span class="sw" style="background:var(--h1)"></span>อีก ${otherN} หมายเลข<span class="lv">${fmt0(otherSum)}<span class="ls">${(100-top6pct).toFixed(1)}%</span></span></div>`:'');
-
-  /* --- horizontal bars: top6 avg vs group avg --- */
+  const R=78,C=2*Math.PI*R,cx=100,cy=100,len=C*topPct/100;
+  donut.innerHTML=`<circle cx="${cx}" cy="${cy}" r="${R}" fill="none" stroke="var(--h1)" stroke-width="26"/><circle cx="${cx}" cy="${cy}" r="${R}" fill="none" stroke="var(--blue-2)" stroke-width="26" stroke-dasharray="0 ${C}" transform="rotate(-90 ${cx} ${cy})"><animate attributeName="stroke-dasharray" from="0 ${C}" to="${len} ${C-len}" dur="0.9s" fill="freeze"/></circle><text class="dt" x="${cx}" y="${cy-2}" text-anchor="middle" dominant-baseline="middle">${topPct.toFixed(0)}%</text><text class="ds" x="${cx}" y="${cy+16}" text-anchor="middle">Top ${topN} ร้านค้า</text>`;
+  document.getElementById('donutLeg').innerHTML=`<div class="li"><span class="sw" style="background:var(--blue-2)"></span>Top ${topN} ร้านค้า<span class="lv">${fmt0(topSum)}<span class="ls">${topPct.toFixed(1)}%</span></span></div>`+(otherN>0?`<div class="li"><span class="sw" style="background:var(--h1)"></span>อีก ${otherN} ร้านค้า<span class="lv">${fmt0(otherSum)}<span class="ls">${(100-topPct).toFixed(1)}%</span></span></div>`:'');
   const hb=document.getElementById('hbars');
-  const htEl=document.getElementById('hbarsTitle'); if(htEl)htEl.textContent=topN+' หมายเลขที่ใช้สูงสุด';
-  const maxAvg=Math.max(...top6.map(r=>r.avg), V.avg_all);
+  document.getElementById('hbarsTitle').textContent=topN+' ร้านค้าที่ใช้จ่ายสูงสุด';
+  const maxAvg=Math.max(...top.map(r=>r.avg),V.avg_all,1);
   hb.innerHTML='';
-  top6.forEach(r=>{
+  top.forEach(r=>{
     const w=(r.avg/maxAvg*100).toFixed(1);
-    const over=r.avg>V.avg_all?' over':'';
-    hb.insertAdjacentHTML('beforeend',
-      `<div class="hb"><div class="hbn">${r.name}</div>
-       <div class="hbt"><div class="hbf${over}" data-w="${w}"></div></div>
-       <div class="hbv">${fmt0(r.avg)}</div></div>`);
+    hb.insertAdjacentHTML('beforeend',`<div class="hb"><div class="hbn">${esc(r.name)}</div><div class="hbt"><div class="hbf${r.avg>V.avg_all?' over':''}" data-w="${w}"></div></div><div class="hbv">${fmt0(r.avg)}</div></div>`);
   });
-  // group-average dashed line overlaid on bar column
   const avgPct=(V.avg_all/maxAvg*100).toFixed(1);
-  hb.insertAdjacentHTML('beforeend',
-    `<div class="hb-avgline" style="left:calc(96px + 12px + (100% - 96px - 12px - 80px - 12px) * ${avgPct/100})">
-       <span class="lab">เฉลี่ยกลุ่ม ${fmt0(V.avg_all)}</span></div>`);
+  hb.insertAdjacentHTML('beforeend',`<div class="hb-avgline" style="left:calc(96px + 12px + (100% - 96px - 12px - 80px - 12px) * ${avgPct/100})"><span class="lab">เฉลี่ย ${fmt0(V.avg_all)}</span></div>`);
   requestAnimationFrame(()=>setTimeout(()=>hb.querySelectorAll('.hbf').forEach((f,i)=>setTimeout(()=>f.style.width=f.dataset.w+'%',i*70)),80));
-
-  /* --- biggest MoM jump flow --- */
   const jw=document.getElementById('jumpWrap');
-  document.getElementById('jumpSub').textContent = V.n>1?`${bigJump.name} · ${bigJump.from} → ${bigJump.to}`:'ต้องเลือกอย่างน้อย 2 เดือน';
-  if(bigJump.name && V.n>1){
+  document.getElementById('jumpSub').textContent=V.n>1&&bigJump.name?`${bigJump.name} · ${bigJump.from} → ${bigJump.to}`:'เลือกอย่างน้อย 2 เดือน';
+  if(V.n>1&&bigJump.name){
     const up=bigJump.amt>0;
-    jw.innerHTML=`
-      <div class="jump-badge"><div class="jn">${bigJump.name}<small>${up?'เพิ่มขึ้น':'ลดลง'}มากที่สุดในกลุ่ม</small></div></div>
-      <div class="jump-flow">
-        <div class="box"><div class="bm">${bigJump.from}</div><div class="bv">${fmt0(bigJump.fromV)}</div></div>
-        <div class="arrow">
-          <svg fill="none" stroke="currentColor" viewBox="0 0 30 18"><path d="M2 9h22M18 3l6 6-6 6"/></svg>
-          <div class="d">${up?'+':'−'}${fmt0(Math.abs(bigJump.amt))}</div>
-        </div>
-        <div class="box"><div class="bm">${bigJump.to}</div><div class="bv">${fmt0(bigJump.toV)}</div></div>
-      </div>
-      <div class="jump-note">การเปลี่ยนแปลงระดับนี้มักเกิดจาก<b>ค่าโทรส่วนเกิน</b>หรือ<b>การเปลี่ยนแพ็กเกจ</b>ในเดือนนั้น</div>`;
-  } else {
-    jw.innerHTML=`<div class="jump-note">เลือกช่วงรอบบิลอย่างน้อย 2 เดือนในแถบซ้าย เพื่อดูการเปลี่ยนแปลงรายเดือน</div>`;
-  }
+    jw.innerHTML=`<div class="jump-badge"><div class="jn">${esc(bigJump.name)}<small>${up?'เพิ่มขึ้น':'ลดลง'}มากที่สุด</small></div></div><div class="jump-flow"><div class="box"><div class="bm">${esc(bigJump.from)}</div><div class="bv">${fmt0(bigJump.fromV)}</div></div><div class="arrow"><svg fill="none" stroke="currentColor" viewBox="0 0 30 18"><path d="M2 9h22M18 3l6 6-6 6"/></svg><div class="d">${up?'+':'−'}${fmt0(Math.abs(bigJump.amt))}</div></div><div class="box"><div class="bm">${esc(bigJump.to)}</div><div class="bv">${fmt0(bigJump.toV)}</div></div></div><div class="jump-note">ใช้ดูร้านค้าหรือผู้รับเงินที่มีค่าใช้จ่ายเปลี่ยนชัดในช่วงที่เลือก</div>`;
+  }else jw.innerHTML='<div class="jump-note">เลือกช่วงอย่างน้อย 2 เดือนเพื่อดูการเปลี่ยนแปลงรายเดือน</div>';
 }
 
-/* ============ TABLE HEATMAP ============ */
-let SORT={key:'total',dir:-1};
 function heatColor(v,V){
   const t=(V.vmax===V.vmin)?0.5:(v-V.vmin)/(V.vmax-V.vmin);
   const stops=[[238,244,255],[207,224,251],[155,190,246],[107,151,238],[84,112,216],[106,82,196]];
@@ -1035,756 +1383,765 @@ function heatColor(v,V){
   return `rgb(${c[0]},${c[1]},${c[2]})`;
 }
 function textColor(v,V){const t=(V.vmax===V.vmin)?0.5:(v-V.vmin)/(V.vmax-V.vmin);return t>0.5?'#fff':'#0f1b33';}
-
 function renderHeatmap(V){
   const q=(document.getElementById('hmSearch').value||'').trim().toLowerCase();
   let rows=[...V.rows];
-  // sort
   rows.sort((a,b)=>{
-    let av,bv;
-    if(SORT.key==='name'){av=a.name;bv=b.name;return SORT.dir*av.localeCompare(bv,'th');}
-    if(SORT.key==='total'){av=a.total;bv=b.total;}
-    else if(SORT.key==='avg'){av=a.avg;bv=b.avg;}
-    else {const mi=+SORT.key; av=a.vals[mi];bv=b.vals[mi];}
-    return SORT.dir*(av-bv);
+    if(SORT.key==='name')return SORT.dir*a.name.localeCompare(b.name,'th');
+    if(SORT.key==='count')return SORT.dir*(a.count-b.count);
+    if(SORT.key==='total')return SORT.dir*(a.total-b.total);
+    if(SORT.key==='avg')return SORT.dir*(a.avg-b.avg);
+    return SORT.dir*((a.vals[+SORT.key]||0)-(b.vals[+SORT.key]||0));
   });
+  if(q)rows=rows.filter(r=>r.name.toLowerCase().includes(q)||CAT_META[r.category].label.toLowerCase().includes(q));
   const ranked=[...V.rows].sort((a,b)=>b.total-a.total);
-  const rankMap=new Map(ranked.map((r,i)=>[r.phone,i+1]));
-  if(q) rows=rows.filter(r=>r.name.toLowerCase().includes(q)||r.phone.includes(q));
-
-  const arrow=(k)=>SORT.key===k?(SORT.dir<0?' ▼':' ▲'):' ⇅';
-  const sortedCls=(k)=>SORT.key===k?'sorted':'';
-  let h='<thead><tr>';
-  h+=`<th class="l">#</th>`;
-  h+=`<th class="l ${sortedCls('name')}" data-k="name">หมายเลข / ผู้ใช้<span class="ar">${arrow('name')}</span></th>`;
-  V.ml.forEach((m,i)=>h+=`<th class="${sortedCls(''+V.idx[i])}" data-k="${V.idx[i]}">${m}<span class="ar">${arrow(''+V.idx[i])}</span></th>`);
-  h+=`<th class="${sortedCls('total')}" data-k="total">รวม<span class="ar">${arrow('total')}</span></th>`;
-  h+=`<th class="${sortedCls('avg')}" data-k="avg">เฉลี่ย<span class="ar">${arrow('avg')}</span></th>`;
-  h+='</tr></thead>';
-
+  const rankMap=new Map(ranked.map((r,i)=>[r.id,i+1]));
+  const arrow=k=>SORT.key===k?(SORT.dir<0?' ▼':' ▲'):' ⇅';
+  const sc=k=>SORT.key===k?'sorted':'';
+  let h='<thead><tr><th class="l">#</th>';
+  h+=`<th class="l ${sc('name')}" data-k="name">ร้านค้า / ผู้รับเงิน<span class="ar">${arrow('name')}</span></th>`;
+  V.ml.forEach((m,i)=>h+=`<th class="${sc(String(i))}" data-k="${i}">${esc(m)}<span class="ar">${arrow(String(i))}</span></th>`);
+  h+=`<th class="${sc('total')}" data-k="total">รวม<span class="ar">${arrow('total')}</span></th><th class="${sc('count')}" data-k="count">สลิป<span class="ar">${arrow('count')}</span></th><th class="${sc('avg')}" data-k="avg">เฉลี่ย/เดือน<span class="ar">${arrow('avg')}</span></th></tr></thead>`;
   let b='<tbody>';
   rows.forEach(r=>{
-    b+=`<tr><td class="rk">${rankMap.get(r.phone)}</td><td class="rl">${r.name}<span class="ph">${r.phone}</span></td>`;
-    r.vals.forEach((v,i)=>{
-      b+=`<td><div class="hcell" style="background:${heatColor(v,V)};color:${textColor(v,V)}" data-n="${r.name}" data-m="${V.mf[i]}" data-v="${v}">${fmt0(v)}</div></td>`;
-    });
-    b+=`<td class="tot"><div class="hcell">${fmt0(r.total)}</div></td>`;
-    b+=`<td class="avg">${fmt0(r.avg)}</td></tr>`;
+    b+=`<tr><td class="rk">${rankMap.get(r.id)||''}</td><td class="rl">${esc(r.name)}<span class="ph">${esc(CAT_META[r.category].label)}</span></td>`;
+    r.vals.forEach((v,i)=>b+=`<td><div class="hcell" style="background:${heatColor(v,V)};color:${textColor(v,V)}" data-n="${esc(r.name)}" data-m="${esc(V.mf[i])}" data-v="${v}">${fmt0(v)}</div></td>`);
+    b+=`<td class="tot"><div class="hcell">${fmt0(r.total)}</div></td><td>${r.count}</td><td class="avg">${fmt0(r.avg)}</td></tr>`;
   });
   b+='</tbody>';
-
   let f='<tfoot><tr><td class="l"></td><td class="l">รวมแต่ละเดือน</td>';
   V.mt.forEach(v=>f+=`<td>${fmt0(v)}</td>`);
-  f+=`<td>${fmt0(V.grand)}</td><td>${fmt0(V.grand/(V.rows.length||1)/V.n)}</td></tr></tfoot>`;
-
-  const hm=document.getElementById('hm');
-  hm.innerHTML=h+b+f;
-  hm.querySelectorAll('th[data-k]').forEach(th=>th.addEventListener('click',()=>{
-    const k=th.dataset.k;
-    if(SORT.key===k) SORT.dir*=-1;
-    else {SORT={key:k,dir:(k==='name'?1:-1)};}
-    renderHeatmap(V);
-  }));
-  hm.querySelectorAll('.hcell[data-v]').forEach(c=>{
-    c.addEventListener('mouseenter',e=>showTip(e,`<div class="tn">${c.dataset.n} · ${c.dataset.m}</div>${fmt(+c.dataset.v)} บาท`));
-    c.addEventListener('mousemove',moveTip);
-    c.addEventListener('mouseleave',hideTip);
-  });
+  f+=`<td>${fmt0(V.grand)}</td><td>${V.slipCount}</td><td>${fmt0(V.grand/V.n)}</td></tr></tfoot>`;
+  const hm=document.getElementById('hm');hm.innerHTML=h+b+f;
+  hm.querySelectorAll('th[data-k]').forEach(th=>th.addEventListener('click',()=>{const k=th.dataset.k;if(SORT.key===k)SORT.dir*=-1;else SORT={key:k,dir:k==='name'?1:-1};renderHeatmap(V);}));
+  hm.querySelectorAll('.hcell[data-v]').forEach(c=>{c.addEventListener('mouseenter',e=>showTip(e,`<div class="tn">${c.dataset.n} · ${c.dataset.m}</div>${fmt(+c.dataset.v)} บาท`));c.addEventListener('mousemove',moveTip);c.addEventListener('mouseleave',hideTip);});
 }
-
-/* ============ STACKED BAR ============ */
 function renderStacked(V){
   document.getElementById('sb-range').textContent='แท่ง = ยอดรวม '+V.n+' เดือน';
-  // legend
-  const leg=document.getElementById('sbLeg'); leg.innerHTML='';
-  V.mf.forEach((m,i)=>{
-    const ci=V.idx[i];
-    leg.insertAdjacentHTML('beforeend',`<div class="li"><span class="sw" style="background:${MONTH_COLORS[ci%MONTH_COLORS.length]}"></span>${m}</div>`);
-  });
+  const leg=document.getElementById('sbLeg');leg.innerHTML='';
+  V.mf.forEach((m,i)=>leg.insertAdjacentHTML('beforeend',`<div class="li"><span class="sw" style="background:${MONTH_COLORS[V.idx[i]%MONTH_COLORS.length]}"></span>${esc(m)}</div>`));
   const srt=[...V.rows].sort((a,b)=>b.total-a.total);
-  const maxTot=Math.max(...srt.map(r=>r.total));
-  const list=document.getElementById('sblist'); list.innerHTML='';
+  const maxTot=Math.max(...srt.map(r=>r.total),1);
+  const list=document.getElementById('sblist');list.innerHTML='';
   srt.forEach(r=>{
-    const segs=r.vals.map((v,i)=>{
-      const ci=V.idx[i];
-      const wPct=(v/maxTot*100).toFixed(2);
-      const col=MONTH_COLORS[ci%MONTH_COLORS.length];
-      return `<div class="sbseg" data-w="${wPct}" style="background:${col}" data-n="${r.name}" data-m="${V.mf[i]}" data-v="${v}"></div>`;
-    }).join('');
-    list.insertAdjacentHTML('beforeend',
-      `<div class="sbr">
-        <div class="sbname">${r.name}<span class="ph">${r.phone}</span></div>
-        <div class="sbtrack">${segs}</div>
-        <div class="sbtot">${fmt0(r.total)}<span class="am">เฉลี่ย ${fmt0(r.avg)}/ด.</span></div>
-      </div>`);
+    const segs=r.vals.map((v,i)=>`<div class="sbseg" data-w="${(v/maxTot*100).toFixed(2)}" style="background:${MONTH_COLORS[V.idx[i]%MONTH_COLORS.length]}" data-n="${esc(r.name)}" data-m="${esc(V.mf[i])}" data-v="${v}"></div>`).join('');
+    list.insertAdjacentHTML('beforeend',`<div class="sbr"><div class="sbname">${esc(r.name)}<span class="ph">${esc(CAT_META[r.category].label)} · ${r.count} สลิป</span></div><div class="sbtrack">${segs}</div><div class="sbtot">${fmt0(r.total)}<span class="am">เฉลี่ย ${fmt0(r.avg)}/ด.</span></div></div>`);
   });
-  list.querySelectorAll('.sbseg').forEach(s=>{
-    s.addEventListener('mouseenter',e=>showTip(e,`<div class="tn">${s.dataset.n} · ${s.dataset.m}</div>${fmt(+s.dataset.v)} บาท`));
-    s.addEventListener('mousemove',moveTip);
-    s.addEventListener('mouseleave',hideTip);
-  });
-  requestAnimationFrame(()=>setTimeout(()=>{
-    list.querySelectorAll('.sbseg').forEach((s,i)=>setTimeout(()=>s.style.width=s.dataset.w+'%',i*4));
-  },80));
-}
-
-/* ============ RENDER ALL ============ */
-/* ============ COST STRUCTURE ============ */
-let ST_SORT={key:'net',dir:-1};
-const CAT_COLORS={pkg:'#3b82f6',over:'#ef4444',sms:'#f59e0b',vat:'#94a3b8'};
-function sumArr(a){return a.reduce((s,v)=>s+v,0);}
-function rowAgg(r){
-  const pkg=sumArr(r.pkgFee), over=sumArr(r.over), sms=sumArr(r.sms);
-  const net=sumArr(r.vals);
-  const before=pkg+over+sms;
-  const vat=Math.max(net-before,0);
-  return {pkg,over,sms,vat,net,before,callMin:sumArr(r.callMin),gb:sumArr(r.gb)};
+  list.querySelectorAll('.sbseg').forEach(s=>{s.addEventListener('mouseenter',e=>showTip(e,`<div class="tn">${s.dataset.n} · ${s.dataset.m}</div>${fmt(+s.dataset.v)} บาท`));s.addEventListener('mousemove',moveTip);s.addEventListener('mouseleave',hideTip);});
+  requestAnimationFrame(()=>setTimeout(()=>list.querySelectorAll('.sbseg').forEach((s,i)=>setTimeout(()=>s.style.width=s.dataset.w+'%',i*4)),80));
 }
 function renderStructure(V){
-  // band
-  let TP=0,TO=0,TS=0,TV=0,TN=0;
-  const aggs=V.rows.map(r=>{const a=rowAgg(r);TP+=a.pkg;TO+=a.over;TS+=a.sms;TV+=a.vat;TN+=a.net;return {r,a};});
-  const extra=TO+TS;
-  const flagged=aggs.filter(x=>x.a.over>0).length;
-  document.getElementById('stStructRange').textContent=V.n+' เดือน';
-  const band=[
-    {cls:'blue',l:'ยอดสุทธิรวม (รวม VAT)',v:fmt0(TN),u:'บาท',d:`${V.rows.length} หมายเลข · ${V.n} เดือน`},
-    {cls:'red',l:'ค่าใช้จ่ายนอกแพ็กเกจ',v:fmt0(extra),u:'บาท',d:`ส่วนเกิน ${fmt0(TO)} + SMS/เสริม ${fmt0(TS)} (ก่อน VAT)`},
-    {cls:'amber',l:'หมายเลขที่มีส่วนเกิน',v:flagged,u:'เบอร์',d:'มีค่าบริการนอกแพ็กเกจในช่วงนี้'},
-    {cls:'green',l:'สัดส่วนค่าแพ็กเกจคงที่',v:(TP/(TP+extra)*100||0).toFixed(0),u:'%',d:`${fmt0(TP)} บาท เป็นยอดที่คาดการณ์ได้`},
-  ];
+  const totals={};
+  Object.keys(CAT_META).forEach(k=>totals[k]={key:k,total:0,count:0,review:0,payees:{}});
+  V.records.forEach(r=>{
+    const t=totals[r.category]||totals.other;
+    t.total+=r.amount;t.count++;if(r.needsReview)t.review++;
+    t.payees[r.payee]=(t.payees[r.payee]||0)+r.amount;
+  });
+  const list=Object.values(totals).filter(x=>x.count>0||x.total>0);
   const bEl=document.getElementById('stBand');bEl.innerHTML='';
-  band.forEach(b=>bEl.insertAdjacentHTML('beforeend',
-    `<div class="glass bcard ${b.cls}"><div class="bl">${b.l}</div><div class="bv">${b.v}<span class="u">${b.u}</span></div><div class="bd">${b.d}</div><div class="strip"></div></div>`));
-
-  // group structure stacked bar
-  const groupVals={pkg:TP,over:TO,sms:TS,vat:TV};
-  const CATS=[['pkg','ค่าแพ็กเกจ (คงที่)'],['over','ค่าบริการส่วนเกิน'],['sms','SMS + บริการเสริม'],['vat','VAT 7%']];
+  const band=[
+    {cls:'blue',l:'ยอดใช้จ่ายรวม',v:fmt0(V.grand),u:'บาท',d:`${V.slipCount} สลิป · ${V.rows.length} ร้านค้า`},
+    {cls:'red',l:'ต้องตรวจสอบ',v:V.needsReview,u:'สลิป',d:'QR ไม่มียอดเงินหรือข้อมูลไม่ครบ'},
+    {cls:'amber',l:'หมวดที่ใช้สูงสุด',v:list.sort((a,b)=>b.total-a.total)[0]?CAT_META[list.sort((a,b)=>b.total-a.total)[0].key].label:'-',u:'',d:'ตามช่วงเดือนที่เลือก'},
+    {cls:'green',l:'เฉลี่ยต่อสลิป',v:fmt0(V.slipCount?V.grand/V.slipCount:0),u:'บาท',d:'คำนวณจากสลิปที่มียอดเงิน'}
+  ];
+  band.forEach(b=>bEl.insertAdjacentHTML('beforeend',`<div class="glass bcard ${b.cls}"><div class="bl">${esc(b.l)}</div><div class="bv">${esc(b.v)}<span class="u">${esc(b.u)}</span></div><div class="bd">${esc(b.d)}</div><div class="strip"></div></div>`));
+  document.getElementById('stStructRange').textContent=V.n+' เดือน';
   const leg=document.getElementById('stLegend');leg.innerHTML='';
-  CATS.forEach(([k,lab])=>leg.insertAdjacentHTML('beforeend',
-    `<div class="li"><span class="sw" style="background:${CAT_COLORS[k]}"></span>${lab} · ${fmt0(groupVals[k])} บาท</div>`));
+  Object.keys(CAT_META).forEach(k=>{if((totals[k].count||0)>0)leg.insertAdjacentHTML('beforeend',`<div class="li"><span class="sw" style="background:${CAT_META[k].color}"></span>${esc(CAT_META[k].label)} · ${fmt0(totals[k].total)} บาท</div>`);});
   const gbar=document.getElementById('stGbar');gbar.innerHTML='';
-  CATS.forEach(([k,lab])=>gbar.insertAdjacentHTML('beforeend',
-    `<div class="gseg" data-c="${lab}" data-v="${groupVals[k]}" style="flex:0 0 0%;background:${CAT_COLORS[k]}"></div>`));
-  document.getElementById('stGtot').textContent=fmt0(TN)+' บาท (รวม VAT)';
-  [...gbar.children].forEach((seg,i)=>{
-    const k=CATS[i][0], val=groupVals[k], pct=TN>0?val/TN*100:0;
-    seg.addEventListener('mouseenter',e=>showTip(e,`<div class="tn">${CATS[i][1]}</div>${fmt(val)} บาท · ${pct.toFixed(1)}%`));
-    seg.addEventListener('mousemove',moveTip);seg.addEventListener('mouseleave',hideTip);
-    setTimeout(()=>{seg.style.flex=`0 0 ${pct}%`;if(pct>7)seg.textContent=pct.toFixed(0)+'%';},80+i*60);
-  });
-
-  // table
+  Object.keys(CAT_META).forEach(k=>{const pct=V.grand?totals[k].total/V.grand*100:0;if(totals[k].count>0)gbar.insertAdjacentHTML('beforeend',`<div class="gseg" data-k="${k}" style="flex:0 0 0%;background:${CAT_META[k].color}"></div>`);});
+  document.getElementById('stGtot').textContent=fmt0(V.grand)+' บาท';
+  [...gbar.children].forEach((seg,i)=>{const k=seg.dataset.k,pct=V.grand?totals[k].total/V.grand*100:0;seg.addEventListener('mouseenter',e=>showTip(e,`<div class="tn">${esc(CAT_META[k].label)}</div>${fmt(totals[k].total)} บาท · ${pct.toFixed(1)}%`));seg.addEventListener('mousemove',moveTip);seg.addEventListener('mouseleave',hideTip);setTimeout(()=>{seg.style.flex=`0 0 ${pct}%`;if(pct>7)seg.textContent=pct.toFixed(0)+'%';},80+i*60);});
   const q=(document.getElementById('stSearch').value||'').trim().toLowerCase();
-  let list=aggs.slice();
-  list.sort((x,y)=>{
-    const k=ST_SORT.key;
-    if(k==='name') return ST_SORT.dir*x.r.name.localeCompare(y.r.name,'th');
-    const av=x.a[k]!==undefined?x.a[k]:0, bv=y.a[k]!==undefined?y.a[k]:0;
-    return ST_SORT.dir*(av-bv);
-  });
-  const ranked=aggs.slice().sort((a,b)=>b.a.net-a.a.net);
-  const rankMap=new Map(ranked.map((x,i)=>[x.r.phone,i+1]));
-  if(q) list=list.filter(x=>x.r.name.toLowerCase().includes(q)||x.r.phone.includes(q));
+  let rows=Object.values(totals).filter(x=>x.count>0);
+  rows.forEach(x=>x.topPayee=Object.keys(x.payees).sort((a,b)=>x.payees[b]-x.payees[a])[0]||'-');
+  if(q)rows=rows.filter(x=>CAT_META[x.key].label.toLowerCase().includes(q)||x.topPayee.toLowerCase().includes(q));
+  rows.sort((a,b)=>ST_SORT.key==='name'?ST_SORT.dir*CAT_META[a.key].label.localeCompare(CAT_META[b.key].label,'th'):ST_SORT.dir*((a[ST_SORT.key]||0)-(b[ST_SORT.key]||0)));
   const arrow=k=>ST_SORT.key===k?(ST_SORT.dir<0?' ▼':' ▲'):' ⇅';
   const sc=k=>ST_SORT.key===k?'sorted':'';
-  let h='<thead><tr><th class="l">#</th>'
-    +`<th class="l ${sc('name')}" data-k="name">หมายเลข / แพ็กเกจ<span class="ar">${arrow('name')}</span></th>`
-    +`<th class="${sc('pkg')}" data-k="pkg">แพ็กเกจ<span class="ar">${arrow('pkg')}</span></th>`
-    +`<th class="${sc('over')}" data-k="over">ส่วนเกิน<span class="ar">${arrow('over')}</span></th>`
-    +`<th class="${sc('sms')}" data-k="sms">SMS/เสริม<span class="ar">${arrow('sms')}</span></th>`
-    +`<th class="${sc('vat')}" data-k="vat">VAT<span class="ar">${arrow('vat')}</span></th>`
-    +`<th class="${sc('net')}" data-k="net">ยอดสุทธิ<span class="ar">${arrow('net')}</span></th>`
-    +`<th class="l ${sc('callMin')}" data-k="callMin">โทร (นาที)<span class="ar">${arrow('callMin')}</span></th>`
-    +`<th class="${sc('gb')}" data-k="gb">เน็ต (GB)<span class="ar">${arrow('gb')}</span></th></tr></thead>`;
-  const maxCall=Math.max(...aggs.map(x=>x.a.callMin),1);
+  let h=`<thead><tr><th class="l ${sc('name')}" data-k="name">หมวด<span class="ar">${arrow('name')}</span></th><th class="${sc('count')}" data-k="count">สลิป<span class="ar">${arrow('count')}</span></th><th class="${sc('total')}" data-k="total">ยอดรวม<span class="ar">${arrow('total')}</span></th><th>เฉลี่ย/สลิป</th><th class="l">ร้านค้าที่ใช้สูงสุด</th><th>ตรวจสอบ</th></tr></thead>`;
   let b='<tbody>';
-  list.forEach(x=>{
-    const a=x.a,r=x.r,flag=a.over>0;
-    const pkgShort=r.pkg.replace(/[,(].*$/,'').slice(0,28);
-    const usePct=Math.min(a.callMin/maxCall*100,100);
-    b+=`<tr class="${flag?'flag':''}">
-      <td>${rankMap.get(r.phone)}</td>
-      <td class="l">${r.name}<span class="ph">${r.phone}</span><span class="pkgn" title="${r.pkg}">${pkgShort||'—'}</span></td>
-      <td>${fmt0(a.pkg)}</td>
-      <td class="over-cell ${a.over>0?'has':'zero'}">${a.over>0?fmt0(a.over):'0'}</td>
-      <td class="${a.sms>0?'':'zero'}">${a.sms>0?fmt(a.sms):'0'}</td>
-      <td style="color:var(--muted)">${fmt0(a.vat)}</td>
-      <td style="font-weight:700;color:var(--blue-2)">${fmt0(a.net)}</td>
-      <td class="l">${a.callMin>0?`<span class="usebar"><span class="ut"><span class="uf" style="width:${usePct}%"></span></span>${fmt0(a.callMin)}</span>`:'<span class="zero">—</span>'}</td>
-      <td class="${a.gb>0?'':'zero'}">${a.gb>0?fmt0(a.gb):'—'}</td>
-    </tr>`;
-  });
+  rows.forEach(x=>b+=`<tr><td class="l"><span class="sw" style="display:inline-block;width:12px;height:12px;border-radius:4px;background:${CAT_META[x.key].color};margin-right:8px"></span>${esc(CAT_META[x.key].label)}<span class="ph">${esc(CAT_META[x.key].hint)}</span></td><td>${x.count}</td><td style="font-weight:700;color:var(--blue-2)">${fmt0(x.total)}</td><td>${fmt0(x.count?x.total/x.count:0)}</td><td class="l">${esc(x.topPayee)}</td><td class="${x.review?'over-cell has':'zero'}">${x.review||0}</td></tr>`);
   b+='</tbody>';
-  let f=`<tfoot><tr><td class="l" colspan="2">รวม ${V.rows.length} หมายเลข</td>`
-    +`<td>${fmt0(TP)}</td><td class="${TO>0?'over-cell has':''}">${fmt0(TO)}</td>`
-    +`<td>${fmt0(TS)}</td><td>${fmt0(TV)}</td><td style="color:var(--blue-2)">${fmt0(TN)}</td><td class="l"></td><td></td></tr></tfoot>`;
-  const tbl=document.getElementById('stTable');
-  tbl.innerHTML=h+b+f;
-  tbl.querySelectorAll('th[data-k]').forEach(th=>th.addEventListener('click',()=>{
-    const k=th.dataset.k;
-    if(ST_SORT.key===k) ST_SORT.dir*=-1; else ST_SORT={key:k,dir:(k==='name'?1:-1)};
-    renderStructure(V);
-  }));
+  const tbl=document.getElementById('stTable');tbl.innerHTML=h+b;
+  tbl.querySelectorAll('th[data-k]').forEach(th=>th.addEventListener('click',()=>{const k=th.dataset.k;if(ST_SORT.key===k)ST_SORT.dir*=-1;else ST_SORT={key:k,dir:k==='name'?1:-1};renderStructure(V);}));
 }
-
-/* ============ WATCH LIST ============ */
+function bankRows(records){
+  const map={};
+  records.forEach(r=>{
+    const key=BANK_META[r.bank]?r.bank:'unknown';
+    const row=map[key]||(map[key]={key,total:0,count:0,review:0,payees:{},last:''});
+    row.total+=r.amount;
+    row.count++;
+    if(r.needsReview)row.review++;
+    row.payees[r.payee]=(row.payees[r.payee]||0)+r.amount;
+    if(!row.last||r.date>row.last)row.last=r.date;
+  });
+  return Object.values(map).map(r=>{
+    const topPayee=Object.entries(r.payees).sort((a,b)=>b[1]-a[1])[0]?.[0]||'-';
+    return {...r,total:round2(r.total),avg:r.count?round2(r.total/r.count):0,topPayee};
+  });
+}
+function renderBanks(V){
+  const rows=bankRows(V.records);
+  const top=[...rows].sort((a,b)=>b.total-a.total)[0];
+  const reviewSum=rows.reduce((s,r)=>s+r.review,0);
+  const bankBand=document.getElementById('bankBand');bankBand.innerHTML='';
+  [
+    {cls:'blue',l:'ธนาคารทั้งหมด',v:rows.length,u:'แห่ง',d:'พบในช่วงเวลาที่เลือก'},
+    {cls:'green',l:'Slip ทั้งหมด',v:V.slipCount,u:'รายการ',d:'รวมทุกธนาคาร'},
+    {cls:'amber',l:'ยอดเงินรวม',v:fmt0(V.grand),u:'บาท',d:'ตามช่วงเวลาที่เลือก'},
+    {cls:'red',l:'ต้องตรวจสอบ',v:reviewSum,u:'รายการ',d:'แยกตามธนาคารได้ด้วย'}
+  ].forEach(x=>bankBand.insertAdjacentHTML('beforeend',`<div class="glass bcard ${x.cls}"><div class="bl">${esc(x.l)}</div><div class="bv">${esc(x.v)}<span class="u">${esc(x.u)}</span></div><div class="bd">${esc(x.d)}</div><div class="strip"></div></div>`));
+  const q=(document.getElementById('bankSearch').value||'').trim().toLowerCase();
+  let view=rows;
+  if(q)view=view.filter(r=>bankLabel(r.key).toLowerCase().includes(q)||r.topPayee.toLowerCase().includes(q));
+  view.sort((a,b)=>{
+    if(BANK_SORT.key==='name')return BANK_SORT.dir*bankLabel(a.key).localeCompare(bankLabel(b.key),'th');
+    if(BANK_SORT.key==='last')return BANK_SORT.dir*((a.last||'').localeCompare(b.last||''));
+    return BANK_SORT.dir*((a[BANK_SORT.key]||0)-(b[BANK_SORT.key]||0));
+  });
+  const arrow=k=>BANK_SORT.key===k?(BANK_SORT.dir<0?' ▼':' ▲'):' ⇅';
+  const sc=k=>BANK_SORT.key===k?'sorted':'';
+  let h='<thead><tr>';
+  h+=`<th class="l ${sc('name')}" data-k="name">ธนาคาร<span class="ar">${arrow('name')}</span></th>`;
+  h+=`<th class="${sc('count')}" data-k="count">Slip<span class="ar">${arrow('count')}</span></th>`;
+  h+=`<th class="${sc('total')}" data-k="total">ยอดเงิน<span class="ar">${arrow('total')}</span></th>`;
+  h+=`<th class="${sc('avg')}" data-k="avg">เฉลี่ย/Slip<span class="ar">${arrow('avg')}</span></th>`;
+  h+=`<th class="${sc('review')}" data-k="review">ตรวจสอบ<span class="ar">${arrow('review')}</span></th>`;
+  h+=`<th class="l">ร้านค้า/ผู้รับเงินสูงสุด</th><th class="${sc('last')}" data-k="last">ล่าสุด<span class="ar">${arrow('last')}</span></th></tr></thead>`;
+  let b='<tbody>';
+  if(!view.length)b+='<tr><td class="l" colspan="7">ไม่พบข้อมูลธนาคารในช่วงนี้</td></tr>';
+  view.forEach(r=>{
+    const pct=V.grand?r.total/V.grand*100:0;
+    b+=`<tr><td class="l"><span class="sw" style="display:inline-block;width:12px;height:12px;border-radius:4px;background:${bankColor(r.key)};margin-right:8px"></span>${esc(bankLabel(r.key))}<span class="ph">${pct.toFixed(1)}% ของยอดเงินรวม</span></td>`;
+    b+=`<td>${r.count}</td><td style="font-weight:700;color:var(--blue-2)"><span class="usebar"><span>${fmt0(r.total)}</span><span class="ut"><span class="uf" style="width:${Math.min(100,pct)}%"></span></span></span></td>`;
+    b+=`<td>${fmt0(r.avg)}</td><td class="${r.review?'over-cell has':'zero'}">${r.review||0}</td><td class="l">${esc(r.topPayee)}</td><td>${r.last?prettyDate(r.last):'-'}</td></tr>`;
+  });
+  b+=`</tbody><tfoot><tr><td class="l">รวม</td><td>${V.slipCount}</td><td>${fmt0(V.grand)}</td><td>${fmt0(V.slipCount?V.grand/V.slipCount:0)}</td><td>${reviewSum}</td><td class="l">${top?esc(bankLabel(top.key)):'-'}</td><td></td></tr></tfoot>`;
+  const tbl=document.getElementById('bankTable');tbl.innerHTML=h+b;
+  tbl.querySelectorAll('th[data-k]').forEach(th=>th.addEventListener('click',()=>{const k=th.dataset.k;if(BANK_SORT.key===k)BANK_SORT.dir*=-1;else BANK_SORT={key:k,dir:k==='name'||k==='last'?1:-1};renderBanks(V);}));
+}
 function renderWatch(V){
-  // band
-  const aggs=V.rows.map(r=>({r,a:rowAgg(r)}));
-  const withOver=aggs.filter(x=>x.a.over>0);
-  // biggest MoM jump (net) per number, within range
-  let jumps=[];
-  V.rows.forEach(r=>{
-    for(let i=1;i<r.vals.length;i++){
-      const d=r.vals[i]-r.vals[i-1];
-      if(d>200) jumps.push({name:r.name,phone:r.phone,amt:d,from:V.mf[i-1],to:V.mf[i],
-        fromV:r.vals[i-1],toV:r.vals[i],absIdx:V.idx[i]});
-    }
-  });
-  jumps.sort((a,b)=>b.amt-a.amt);
-  const overSum=withOver.reduce((s,x)=>s+x.a.over,0);
-  const wb=[
-    {cls:'red',l:'มีค่าบริการส่วนเกิน',v:withOver.length,u:'เบอร์',d:`รวม ${fmt0(overSum)} บาท นอกแพ็กเกจ`},
-    {cls:'amber',l:'ยอดพุ่งจากเดือนก่อน',v:jumps.length,u:'ครั้ง',d:'เพิ่มขึ้น > 200 บาท เทียบเดือนก่อนหน้า'},
-    {cls:'blue',l:'หมายเลขทั้งหมด',v:V.rows.length,u:'เบอร์',d:`ช่วง ${V.mf[0]}${V.n>1?'–'+V.mf[V.n-1]:''}`},
-  ];
+  const missing=V.records.filter(r=>r.needsReview);
+  const avg=V.slipCount?V.grand/V.slipCount:0;
+  const high=V.records.filter(r=>r.amount>Math.max(avg*2,1000)).sort((a,b)=>b.amount-a.amount).slice(0,8);
   const wbEl=document.getElementById('wBand');wbEl.innerHTML='';
-  wb.forEach(b=>wbEl.insertAdjacentHTML('beforeend',
-    `<div class="glass bcard ${b.cls}"><div class="bl">${b.l}</div><div class="bv">${b.v}<span class="u">${b.u}</span></div><div class="bd">${b.d}</div><div class="strip"></div></div>`));
-
-  const items=[];
-  withOver.sort((a,b)=>b.a.over-a.a.over).forEach(x=>{
-    items.push({lvl:'red',name:x.r.name,phone:x.r.phone,
-      reason:`มีค่าบริการส่วนเกินนอกแพ็กเกจ ${fmt0(x.a.over)} บาท ในช่วงนี้ — พิจารณาปรับแพ็กเกจให้ครอบคลุมหากเกิดต่อเนื่อง`,
-      v:fmt0(x.a.over),vl:'ส่วนเกิน (บาท)',
-      ic:'<path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><path d="M12 9v4M12 17h.01"/>'});
-  });
-  jumps.slice(0,8).forEach(j=>{
-    const c=(typeof CAUSE!=='undefined' && CAUSE[j.phone] && CAUSE[j.phone][j.absIdx])?CAUSE[j.phone][j.absIdx]:{reasons:[],extra:[]};
-    let cause = c.reasons && c.reasons.length ? c.reasons.join(' + ') : 'ค่าแพ็กเกจรายเดือนปรับเพิ่ม (ไม่พบรายการใหม่ในบิล)';
-    let detail = c.extra && c.extra.length ? ' — '+c.extra.join(' / ') : '';
-    items.push({lvl:'amber',name:j.name,phone:j.phone,
-      reason:`ยอดเพิ่มขึ้น ${fmt0(j.amt)} บาท จาก${j.from} (${fmt0(j.fromV)}) ไป${j.to} (${fmt0(j.toV)}) · <b style="color:var(--ink)">สาเหตุ:</b> ${cause}${detail}`,
-      v:'+'+fmt0(j.amt),vl:'เพิ่มขึ้น (บาท)',
-      ic:'<path d="M3 17l6-6 4 4 8-8M21 7v6M21 7h-6"/>'});
-  });
+  [
+    {cls:'red',l:'สลิปต้องตรวจสอบ',v:missing.length,u:'รายการ',d:'OCR อ่านข้อมูลไม่ครบ'},
+    {cls:'amber',l:'รายการยอดสูง',v:high.length,u:'รายการ',d:'สูงกว่าเกณฑ์เฉลี่ยในช่วงนี้'},
+    {cls:'blue',l:'สลิปทั้งหมด',v:V.slipCount,u:'รายการ',d:`ช่วง ${V.mf[0]}${V.n>1?'–'+V.mf[V.n-1]:''}`}
+  ].forEach(x=>wbEl.insertAdjacentHTML('beforeend',`<div class="glass bcard ${x.cls}"><div class="bl">${esc(x.l)}</div><div class="bv">${x.v}<span class="u">${esc(x.u)}</span></div><div class="bd">${esc(x.d)}</div><div class="strip"></div></div>`));
+  const items=[],seen=new Set();
+  const add=(r,lvl,v,vl,reason)=>{
+    if(!r.key||seen.has(r.key))return;
+    seen.add(r.key);
+    items.push({key:r.key,lvl,name:r.payee,sub:prettyDate(r.date),v,vl,reason});
+  };
+  missing.forEach(r=>add(r,'red','ตรวจสอบ','ข้อมูล',r.note||'OCR อ่านข้อมูลไม่ครบ โปรดตรวจจากภาพสลิป'));
+  high.forEach(r=>add(r,'amber',fmt0(r.amount),'บาท',`รายการยอดสูงในหมวด ${CAT_META[r.category].label} · ref ${r.ref||'-'}`));
   const wl=document.getElementById('watchList');
-  if(items.length===0){
-    wl.innerHTML=`<div class="glass watch-empty">ไม่มีรายการที่ต้องตรวจสอบในช่วงนี้ — ทุกหมายเลขอยู่ในแพ็กเกจ ไม่มีส่วนเกินหรือยอดพุ่งผิดปกติ</div>`;
+  if(!items.length){wl.innerHTML='<div class="glass watch-empty">ไม่มีรายการที่ต้องตรวจสอบในช่วงนี้</div>';return;}
+  wl.innerHTML='';
+  items.forEach(it=>wl.insertAdjacentHTML('beforeend',`<div class="wrow ${it.lvl}" data-key="${esc(it.key)}" role="button" tabindex="0" title="คลิกเพื่อดูสลิปและแก้ไขข้อมูล"><div class="wi"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><path d="M12 9v4M12 17h.01"/></svg></div><div class="wt">${esc(it.name)} <span style="font-family:'JetBrains Mono';font-size:11px;color:var(--muted);font-weight:400">${esc(it.sub)}</span><small>${esc(it.reason)}</small></div><div class="wv ${it.lvl}">${esc(it.v)}<small>${esc(it.vl)}</small></div></div>`));
+  wl.querySelectorAll('.wrow[data-key]').forEach(row=>{
+    row.addEventListener('click',()=>openReviewEditor(row.dataset.key));
+    row.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();openReviewEditor(row.dataset.key);}});
+  });
+}
+const reviewModal=document.getElementById('reviewModal');
+const reviewForm=document.getElementById('reviewForm');
+const reviewSlipBox=document.getElementById('reviewSlipBox');
+const reviewSlipImg=document.getElementById('reviewSlipImg');
+const reviewNoSlip=document.getElementById('reviewNoSlip');
+const reviewOcrText=document.getElementById('reviewOcrText');
+const revDate=document.getElementById('revDate');
+const revAmount=document.getElementById('revAmount');
+const revPayee=document.getElementById('revPayee');
+const revCategory=document.getElementById('revCategory');
+const revBank=document.getElementById('revBank');
+const revChannel=document.getElementById('revChannel');
+const revRef=document.getElementById('revRef');
+const revSource=document.getElementById('revSource');
+const revNote=document.getElementById('revNote');
+const revNeedsReview=document.getElementById('revNeedsReview');
+
+function toInputDateTime(iso){
+  const d=new Date(iso);
+  if(isNaN(d.getTime()))return '';
+  return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+function setSelectValue(sel,value){
+  const v=String(value||'');
+  if(v&&![...sel.options].some(o=>o.value===v))sel.insertAdjacentHTML('beforeend',`<option value="${esc(v)}">${esc(v)}</option>`);
+  sel.value=v||sel.options[0]?.value||'';
+}
+function fillCategorySelect(value){
+  revCategory.innerHTML=Object.keys(CAT_META).map(k=>`<option value="${k}">${esc(CAT_META[k].label)}</option>`).join('');
+  revCategory.value=CAT_META[value]?value:'other';
+}
+function fillBankSelect(value){
+  revBank.innerHTML=Object.keys(BANK_META).map(k=>`<option value="${k}">${esc(BANK_META[k].label)}</option>`).join('');
+  revBank.value=BANK_META[value]?value:'unknown';
+}
+function findRecordByKey(key){
+  return RECORDS.find(r=>r.key===key);
+}
+function openReviewEditor(key){
+  const r=findRecordByKey(key);
+  if(!r){toast('ไม่พบรายการนี้แล้ว');return;}
+  reviewForm.dataset.key=key;
+  document.getElementById('reviewSub').textContent=`${r.source||'ไม่ทราบไฟล์'} · ${prettyDate(r.date)}`;
+  revDate.value=toInputDateTime(r.date);
+  revAmount.value=r.amount?String(r.amount):'';
+  revPayee.value=r.payee||'';
+  fillCategorySelect(r.category);
+  fillBankSelect(r.bank);
+  setSelectValue(revChannel,r.manualEdited?'Manual':(r.channel||'OCR'));
+  revRef.value=r.ref||'';
+  revSource.value=r.source||'';
+  revNote.value=r.note||'';
+  revNeedsReview.checked=false;
+  reviewOcrText.textContent=r.ocrText?`OCR:\n${r.ocrText}`:'ไม่มีข้อความ OCR';
+  if(r.slipImage){
+    reviewSlipImg.src=r.slipImage;
+    reviewSlipBox.classList.add('has-img');
+    reviewNoSlip.style.display='none';
   }else{
-    wl.innerHTML='';
-    items.forEach(it=>wl.insertAdjacentHTML('beforeend',
-      `<div class="wrow ${it.lvl}">
-        <div class="wi"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24">${it.ic}</svg></div>
-        <div class="wt">${it.name} <span style="font-family:'JetBrains Mono';font-size:11px;color:var(--muted);font-weight:400">${it.phone}</span><small>${it.reason}</small></div>
-        <div class="wv ${it.lvl}">${it.v}<small>${it.vl}</small></div>
-      </div>`));
+    reviewSlipImg.removeAttribute('src');
+    reviewSlipBox.classList.remove('has-img');
+    reviewNoSlip.style.display='block';
+  }
+  reviewModal.classList.add('show');
+  reviewModal.setAttribute('aria-hidden','false');
+  setTimeout(()=>revAmount.focus(),80);
+}
+function closeReviewEditor(){
+  reviewModal.classList.remove('show');
+  reviewModal.setAttribute('aria-hidden','true');
+  reviewForm.dataset.key='';
+}
+function refreshAfterRecordEdit(){
+  const keep={...RANGE};
+  D=rebuildData(RECORDS);
+  buildRangePicker();
+  RANGE={from:Math.min(keep.from,D.n-1),to:Math.min(keep.to,D.n-1)};
+  if(RANGE.from<0)RANGE.from=0;
+  if(RANGE.to<0)RANGE.to=0;
+  if(RANGE.from>RANGE.to)RANGE.from=RANGE.to;
+  drFrom.value=RANGE.from;
+  drTo.value=RANGE.to;
+  renderAll();
+}
+async function persistRecords(){
+  await idbClear();
+  await idbPut(RECORDS.map(normalizeRecord));
+  await saveSettings();
+}
+async function saveManualReview(e){
+  e.preventDefault();
+  const key=reviewForm.dataset.key;
+  const idx=RECORDS.findIndex(r=>r.key===key);
+  if(idx<0){toast('ไม่พบรายการนี้แล้ว');closeReviewEditor();return;}
+  const original=RECORDS[idx];
+  const dateValue=revDate.value?new Date(revDate.value):new Date(original.date);
+  const amount=pNum(revAmount.value)||0;
+  const payee=cleanText(revPayee.value)||'สลิป OCR';
+  const updated=normalizeRecord({
+    ...original,
+    key:original.key,
+    date:isNaN(dateValue.getTime())?original.date:toLocalISO(dateValue),
+    amount,
+    payee,
+    category:CAT_META[revCategory.value]?revCategory.value:categoryFromText(payee+' '+(original.ocrText||'')),
+    bank:BANK_META[revBank.value]?revBank.value:detectBank(payee+' '+(original.ocrText||'')),
+    channel:revChannel.value||'Manual',
+    ref:cleanText(revRef.value),
+    source:original.source,
+    note:cleanText(revNote.value)||'แก้ไขด้วย Manual',
+    needsReview:revNeedsReview.checked||amount<=0||isWeakPayee(payee),
+    manualEdited:true,
+    manualUpdatedAt:new Date().toISOString()
+  });
+  updated.key=original.key;
+  RECORDS[idx]=updated;
+  try{
+    await persistRecords();
+    refreshAfterRecordEdit();
+    closeReviewEditor();
+    toast('บันทึกเฉพาะรายการนี้แล้ว');
+  }catch(err){
+    toast('บันทึกไม่สำเร็จ: '+err.message);
   }
 }
-
-/* ============ GUIDE (เมนูที่ 7) ============ */
+reviewForm.addEventListener('submit',saveManualReview);
+document.getElementById('reviewCloseBtn').addEventListener('click',closeReviewEditor);
+document.getElementById('reviewCancelBtn').addEventListener('click',closeReviewEditor);
+reviewModal.addEventListener('click',e=>{if(e.target===reviewModal)closeReviewEditor();});
+window.addEventListener('keydown',e=>{if(e.key==='Escape'&&reviewModal.classList.contains('show'))closeReviewEditor();});
 function renderGuide(){
-  const el=document.getElementById('guideBody'); if(!el)return;
-  // helper SVG figures (theme-aware via currentColor / CSS vars)
-  const figUpload=`<svg viewBox="0 0 600 200" xmlns="http://www.w3.org/2000/svg">
-    <rect x="0" y="0" width="600" height="200" fill="var(--glass-2)"/>
-    <rect x="36" y="50" width="180" height="100" rx="14" fill="none" stroke="var(--blue-2)" stroke-width="2.5" stroke-dasharray="8 6"/>
-    <path d="M126 95 l0 -28 M114 79 l12 -12 l12 12" stroke="var(--blue-2)" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-    <rect x="96" y="104" width="60" height="14" rx="4" fill="var(--blue)"/>
-    <text x="126" y="138" text-anchor="middle" font-size="13" fill="var(--ink-2)" font-family="sans-serif">ลากไฟล์มาวาง</text>
-    <text x="300" y="95" font-size="22" fill="var(--muted)">หรือ</text>
-    <rect x="380" y="78" width="180" height="44" rx="12" fill="var(--blue)"/>
-    <text x="470" y="105" text-anchor="middle" font-size="15" fill="#fff" font-family="sans-serif" font-weight="bold">อัปโหลดใบแจ้งหนี้ AIS</text>
-    <text x="470" y="145" text-anchor="middle" font-size="12" fill="var(--ink-2)" font-family="sans-serif">กดปุ่มแล้วเลือกไฟล์</text>
-  </svg>`;
-  const figFile=`<svg viewBox="0 0 600 180" xmlns="http://www.w3.org/2000/svg">
-    <rect x="0" y="0" width="600" height="180" fill="var(--glass-2)"/>
-    <g transform="translate(150,30)">
-      <rect x="0" y="0" width="90" height="120" rx="8" fill="#fff" stroke="var(--blue-2)" stroke-width="2"/>
-      <rect x="14" y="18" width="62" height="6" rx="3" fill="var(--h2)"/>
-      <rect x="14" y="32" width="50" height="5" rx="2.5" fill="var(--h1)"/>
-      <rect x="14" y="44" width="58" height="5" rx="2.5" fill="var(--h1)"/>
-      <text x="45" y="100" text-anchor="middle" font-size="11" fill="var(--blue-2)" font-family="sans-serif" font-weight="bold">หน้า 1</text>
-      <text x="45" y="140" text-anchor="middle" font-size="11" fill="var(--ink-2)" font-family="sans-serif">สรุปบิล</text>
-    </g>
-    <g transform="translate(280,30)">
-      <rect x="0" y="0" width="90" height="120" rx="8" fill="#fff" stroke="var(--blue)" stroke-width="2.5"/>
-      <rect x="14" y="18" width="62" height="6" rx="3" fill="var(--blue)"/>
-      <rect x="14" y="32" width="50" height="5" rx="2.5" fill="var(--h2)"/>
-      <rect x="14" y="44" width="58" height="5" rx="2.5" fill="var(--h2)"/>
-      <rect x="14" y="56" width="46" height="5" rx="2.5" fill="var(--h2)"/>
-      <text x="45" y="100" text-anchor="middle" font-size="11" fill="var(--blue)" font-family="sans-serif" font-weight="bold">หน้า 2</text>
-      <text x="45" y="140" text-anchor="middle" font-size="11" fill="var(--ink-2)" font-family="sans-serif">รายละเอียด</text>
-    </g>
-    <path d="M250 90 l28 0 M270 82 l10 8 l-10 8" stroke="var(--muted)" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-    <text x="455" y="85" font-size="13" fill="var(--ink-2)" font-family="sans-serif">1 ไฟล์ = 1 เบอร์</text>
-    <text x="455" y="105" font-size="13" fill="var(--ink-2)" font-family="sans-serif">= 2 หน้าเสมอ</text>
-  </svg>`;
-  const figRange=`<svg viewBox="0 0 600 120" xmlns="http://www.w3.org/2000/svg">
-    <rect x="0" y="0" width="600" height="120" fill="var(--glass-2)"/>
-    <text x="40" y="50" font-size="13" fill="var(--muted)" font-family="sans-serif">รอบบิล</text>
-    <rect x="110" y="34" width="120" height="36" rx="9" fill="var(--field)" stroke="var(--blue-2)" stroke-width="1.5"/>
-    <text x="170" y="57" text-anchor="middle" font-size="13" fill="var(--ink)" font-family="sans-serif">มกราคม ▾</text>
-    <text x="245" y="57" font-size="14" fill="var(--muted)">–</text>
-    <rect x="270" y="34" width="120" height="36" rx="9" fill="var(--field)" stroke="var(--blue-2)" stroke-width="1.5"/>
-    <text x="330" y="57" text-anchor="middle" font-size="13" fill="var(--ink)" font-family="sans-serif">เมษายน ▾</text>
-    <circle cx="470" cy="52" r="20" fill="var(--glass)" stroke="var(--blue-2)" stroke-width="1.5"/>
-    <path d="M470 44 a8 8 0 1 0 6 14 a6 6 0 1 1 -6 -14z" fill="var(--blue-2)"/>
-    <text x="470" y="92" text-anchor="middle" font-size="11" fill="var(--ink-2)" font-family="sans-serif">สลับสว่าง/มืด</text>
-  </svg>`;
-  const steps=[
-    {n:'1',t:'เปิดไฟล์ให้ถูกวิธี',body:
-      `<p>โปรแกรมนี้เป็นไฟล์ HTML ไฟล์เดียว ทำงานในเว็บเบราว์เซอร์ (เช่น Google Chrome, Microsoft Edge, Safari)</p>
-       <ul><li><b>ดาวน์โหลดไฟล์ลงเครื่องก่อน</b> แล้วดับเบิลคลิกเปิด — วิธีนี้ใช้งานได้ครบทุกฟังก์ชัน</li>
-       <li>แนะนำให้ใช้ <b>Google Chrome</b> หรือ <b>Microsoft Edge</b> บนคอมพิวเตอร์ จะเสถียรที่สุด</li></ul>`,
-      tip:{type:'warn',text:'อย่าเปิดไฟล์ผ่านหน้าพรีวิวของ Google Drive โดยตรง เพราะ Drive ไม่รันโปรแกรม ต้องกดดาวน์โหลดลงเครื่องก่อนทุกครั้ง'}},
-    {n:'2',t:'ทำความรู้จักหน้าจอ',body:
-      `<p>เมื่อเปิดมาครั้งแรก คุณจะเห็น <b>ข้อมูลตัวอย่าง 4 เบอร์</b> ให้ลองเล่นดูก่อนได้ ไม่ใช่ข้อมูลจริง</p>
-       <ul><li><b>แถบซ้าย (เมนู):</b> สลับดูหน้าต่างๆ ของแดชบอร์ด</li>
-       <li><b>มุมขวาบน:</b> เลือกช่วงเดือน (รอบบิล) และปุ่มสลับโหมดสว่าง/มืด</li>
-       <li><b>ตรงกลาง:</b> เนื้อหาของแต่ละหน้า เปลี่ยนตามเมนูที่เลือก</li></ul>`,fig:figRange,cap:'มุมขวาบน: เลือกรอบบิล + ปุ่มสลับโหมดสว่าง/มืด'},
-    {n:'3',t:'นำข้อมูลจริงเข้า — อัปโหลดใบแจ้งหนี้',body:
-      `<p>เมื่อพร้อมใช้ข้อมูลจริง ให้กดปุ่ม <b>"อัปโหลดใบแจ้งหนี้ AIS"</b> ที่แถบซ้าย แล้วเลือกไฟล์ใบแจ้งหนี้ AIS (ไฟล์ PDF)</p>
-       <ul><li>เลือกได้ <b>ทีละไฟล์</b>, <b>หลายไฟล์พร้อมกัน</b>, หรือ <b>ไฟล์ ZIP</b> ที่รวมทั้งเดือน</li>
-       <li>จะลากไฟล์มาวางบนหน้าจอก็ได้</li>
-       <li>โปรแกรมจะอ่านเอง รู้เองว่าเป็นเดือนอะไร เบอร์อะไร แล้วคำนวณให้อัตโนมัติ</li></ul>`,fig:figUpload,cap:'กดปุ่มอัปโหลด หรือลากไฟล์มาวางบนหน้าจอ'},
-    {n:'4',t:'รูปแบบไฟล์ที่ระบบรองรับ',body:
-      `<p>ใบแจ้งหนี้ AIS 1 ใบ = 1 เบอร์ = 2 หน้าเสมอ (เป็นรูปแบบมาตรฐานของ AIS) ระบบอ่านข้อมูลจากหน้าที่ 2</p>
-       <ul><li>ถ้าอัปโหลดเดือนที่เคยมีแล้ว ระบบจะ<b>เขียนทับด้วยข้อมูลใหม่</b></li>
-       <li>ถ้าไฟล์ไม่ใช่ 2 หน้า ระบบจะข้ามไฟล์นั้นและแจ้งเตือน</li></ul>`,fig:figFile,cap:'1 ไฟล์ PDF = ใบแจ้งหนี้ 1 เบอร์ มี 2 หน้า'},
-  ];
-  let h='<div class="guide-sec-title">เริ่มต้นใช้งาน</div>';
-  steps.forEach(s=>{
-    h+=`<div class="glass guide-step"><div class="gnum">${s.n}</div><div class="gcontent"><h3>${s.t}</h3>${s.body}`;
-    if(s.fig)h+=`<div class="gfig">${s.fig}</div>`+(s.cap?`<div class="gcap">${s.cap}</div>`:'');
-    if(s.tip)h+=`<div class="guide-tip ${s.tip.type==='warn'?'warn':''}"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 9v4M12 17h.01M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg><div>${s.tip.text}</div></div>`;
-    h+=`</div></div>`;
-  });
-  // menu explanations
-  const menus=[
-    {ic:'#3b82f6',t:'ภาพรวม',d:'หน้าแรก สรุปภาพใหญ่ทั้งหมด — ยอดรวมทุกเดือน, ค่าเฉลี่ยต่อเดือน, เดือนที่ใช้สูงสุด และกราฟแท่งเทียบรายเดือน เหมาะดูภาพรวมเร็วๆ'},
-    {ic:'#22a3c4',t:'ตารางความหนาแน่น',d:'ตารางสีรายเบอร์ × รายเดือน สียิ่งเข้ม = ค่าใช้จ่ายยิ่งสูง คลิกหัวคอลัมน์เพื่อเรียงลำดับ พิมพ์ค้นหาเบอร์ได้ เห็นทุกเบอร์พร้อมกันในตาราง'},
-    {ic:'#a855f7',t:'สัดส่วนรายเบอร์',d:'กราฟแท่งยอดรวมของแต่ละเบอร์ เรียงจากมากไปน้อย แต่ละแท่งแบ่งสีตามเดือน เห็นชัดว่าเบอร์ไหนใช้เยอะ เดือนไหนพุ่ง'},
-    {ic:'#10b981',t:'ข้อสังเกตสำคัญ',d:'สรุปประเด็นเด่นแบบกราฟ — การกระจุกตัวของค่าใช้จ่าย, เบอร์อันดับ 1, และการเปลี่ยนแปลงที่ชัดเจนที่สุด เข้าใจเร็วในหน้าเดียว'},
-    {ic:'#f59e0b',t:'โครงสร้างค่าใช้จ่าย',d:'แตกยอดบิลเป็นหมวด — ค่าแพ็กเกจ / ค่าส่วนเกิน / SMS / VAT พร้อมตารางแต่ละเบอร์ และข้อมูลการใช้งานจริง (นาทีโทร, เน็ต GB) เพื่อดูว่าควรปรับแพ็กเกจไหม'},
-    {ic:'#ef4444',t:'รายการที่ควรตรวจสอบ',d:'คัดเฉพาะเบอร์ที่มีค่าส่วนเกิน หรือยอดพุ่งผิดปกติจากเดือนก่อน พร้อม<b>ระบุสาเหตุจริง</b> เช่น "เพิ่มแพ็กเกจโรมมิ่ง 799 บาท" หรือ "โทรเพิ่ม 196 นาที" ให้รู้ทันทีว่าเกิดจากอะไร'},
-  ];
-  h+='<div class="guide-sec-title">อธิบายแต่ละเมนู</div>';
-  menus.forEach((m,i)=>{
-    h+=`<div class="glass guide-step"><div class="gnum" style="background:linear-gradient(135deg,${m.ic},${m.ic})">${i+1}</div>
-      <div class="gcontent"><h3>${m.t}</h3><p>${m.d}</p></div></div>`;
-  });
-  // data persistence + settings
-  h+='<div class="guide-sec-title">เรื่องที่ควรรู้</div>';
-  h+=`<div class="glass guide-step"><div class="gnum"><svg fill="none" stroke="#fff" viewBox="0 0 24 24" style="width:22px;height:22px"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg></div>
-    <div class="gcontent"><h3>การบันทึกข้อมูล (สำคัญ)</h3>
-    <p>เมื่ออัปโหลดข้อมูลแล้ว ระบบจะ<b>จำไว้ในเครื่องของคุณ</b> ปิดไฟล์หรือปิดเบราว์เซอร์แล้วเปิดใหม่ ข้อมูลยังอยู่ จนกว่าจะกดปุ่ม "ล้างข้อมูล / เริ่มใหม่"</p>
-    <ul><li>ข้อมูลผูกกับ<b>เครื่องและเบราว์เซอร์เดิม</b> + ตำแหน่งไฟล์เดิม</li>
-    <li>ถ้าย้ายไฟล์ไปโฟลเดอร์อื่น เปลี่ยนเบราว์เซอร์ หรือเปิดคนละเครื่อง จะเริ่มนับใหม่ (ข้อมูลเดิมไม่หาย แต่จะอยู่คนละที่)</li>
-    <li>เพื่อความต่อเนื่อง แนะนำให้<b>เก็บไฟล์ไว้ที่เดิม เปิดที่เดิมเสมอ</b></li></ul></div></div>`;
-  h+=`<div class="glass guide-step"><div class="gnum">⚙</div>
-    <div class="gcontent"><h3>เปลี่ยนชุดสี (เมนูตั้งค่า)</h3>
-    <p>ไปที่เมนู "ตั้งค่า" เลือกชุดสีได้ 5 แบบ (น้ำเงิน เขียว ม่วง ส้ม ชมพู) และสลับโหมดสว่าง/มืดได้ ระบบจะจำค่าที่เลือกไว้ให้</p></div></div>`;
-  h+=`<div class="guide-tip"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
-    <div>ทุกหน้าจะคำนวณตาม<b>ช่วงรอบบิล</b>ที่เลือกไว้มุมขวาบน เช่น ถ้าเลือกแค่ มี.ค.–เม.ย. ตัวเลขทุกหน้าจะแสดงเฉพาะ 2 เดือนนั้น</div></div>`;
-  el.innerHTML=h;
+  const el=document.getElementById('guideBody');if(!el)return;
+  el.innerHTML=`<div class="guide-sec-title">เริ่มต้นใช้งาน</div>
+  <div class="glass guide-step"><div class="gnum">1</div><div class="gcontent"><h3>อัปโหลดสลิปจากมือถือ</h3><p>กดปุ่มอัปโหลดสลิป หรือวางไฟล์รูปภาพจากมือถือ เช่น JPG, PNG, WEBP รวมถึง PDF หรือ ZIP ที่รวมหลายสลิปไว้ในครั้งเดียว</p><ul><li>ระบบใช้ OCR อ่านตัวหนังสือบนภาพสลิปเป็นหลักทั้งหมด</li><li>ระบบพยายามอ่านยอดเงิน ผู้รับโอน/ร้านค้า วันที่ และรหัสอ้างอิงจากภาพสลิปอัตโนมัติ</li><li>รายการที่ OCR ยังอ่านไม่ครบจะถูกส่งไปหน้า “รายการที่ควรตรวจสอบ”</li></ul></div></div>
+  <div class="glass guide-step"><div class="gnum">2</div><div class="gcontent"><h3>ดูภาพรวมค่าใช้จ่าย</h3><p>แดชบอร์ดจะรวมยอดตามเดือน ร้านค้า/ผู้รับเงิน และหมวดค่าใช้จ่าย พร้อมกราฟแนวโน้ม ตาราง heatmap และรายการยอดสูงผิดปกติ</p></div></div>
+  <div class="glass guide-step"><div class="gnum">3</div><div class="gcontent"><h3>ข้อจำกัดที่ควรรู้</h3><p>ความแม่นยำของ OCR ขึ้นกับความคมชัด แสง เงา ขนาดตัวอักษร และรูปแบบสลิปของแต่ละธนาคาร สลิปที่อ่านไม่ครบจะถูกแยกไว้ให้ตรวจสอบ</p></div></div>
+  <div class="guide-sec-title">ข้อมูลส่วนตัว</div>
+  <div class="glass guide-step"><div class="gnum">4</div><div class="gcontent"><h3>ข้อมูลเก็บในเครื่องนี้</h3><p>ข้อมูลสลิปถูกบันทึกในเบราว์เซอร์เครื่องนี้เท่านั้น ไม่ส่งออกไปภายนอก การล้างข้อมูลจะลบสลิปที่เคยนำเข้าและกลับไปแสดงข้อมูลตัวอย่าง</p></div></div>`;
 }
-
 function renderAll(){
-
   const V=computeView();
-  setPeriod(V);
-  renderKPIs(V);
-  renderBars(V);
-  renderInsights(V);
-  renderHeatmap(V);
-  renderStacked(V);
-  renderStructure(V);
-  renderWatch(V);
+  setPeriod(V);renderKPIs(V);renderBars(V);renderInsights(V);renderHeatmap(V);renderStacked(V);renderStructure(V);renderBanks(V);renderWatch(V);
 }
+
 document.getElementById('hmSearch').addEventListener('input',()=>renderHeatmap(computeView()));
 document.getElementById('stSearch').addEventListener('input',()=>renderStructure(computeView()));
+document.getElementById('bankSearch').addEventListener('input',()=>renderBanks(computeView()));
 
-/* ============ NAV ============ */
-const app=document.getElementById('app');
 const NAV_META={
-  overview:{t:'ภาพรวม',s:'สรุปค่าใช้จ่ายโทรศัพท์รายหมายเลข'},
-  density:{t:'ตารางความหนาแน่น',s:'Heatmap รายหมายเลข × รายเดือน · จัดเรียง/กรองได้'},
-  breakdown:{t:'สัดส่วนรายเบอร์',s:'ยอดรวมต่อเบอร์ แบ่งสีตามเดือน'},
-  insights:{t:'ข้อสังเกตสำคัญ',s:'สรุปประเด็นเด่นแบบกราฟ · เข้าใจเร็ว'},
-  structure:{t:'โครงสร้างค่าใช้จ่าย',s:'แตกหมวด แพ็กเกจ/ส่วนเกิน/SMS/VAT + การใช้งานจริง'},
-  watch:{t:'รายการที่ควรตรวจสอบ',s:'เบอร์ที่มีส่วนเกิน หรือยอดพุ่งผิดปกติ'},
-  guide:{t:'คู่มือวิธีใช้',s:'สอนใช้งานทีละขั้น สำหรับผู้เริ่มต้น'},
+  overview:{t:'ภาพรวม',s:'สรุปค่าใช้จ่ายจาก OCR Slip'},
+  density:{t:'ตารางความหนาแน่น',s:'Heatmap ร้านค้า × รายเดือน · จัดเรียง/กรองได้'},
+  breakdown:{t:'สัดส่วนรายร้านค้า',s:'ยอดรวมต่อร้านค้า แบ่งสีตามเดือน'},
+  insights:{t:'ข้อสังเกตสำคัญ',s:'สรุปประเด็นเด่นแบบกราฟ'},
+  structure:{t:'โครงสร้างค่าใช้จ่าย',s:'แตกหมวด อาหาร/เดินทาง/ช้อปปิ้ง/บิล/โอนเงิน'},
+  banks:{t:'แยกตามธนาคาร',s:'จำนวน Slip และยอดเงินรวมรายธนาคาร'},
+  watch:{t:'รายการที่ควรตรวจสอบ',s:'คลิกสลิปเพื่อดูภาพและแก้ไขข้อมูลเฉพาะรายการ'},
+  guide:{t:'คู่มือวิธีใช้',s:'วิธีนำเข้าสลิป OCR และอ่านผล'},
   settings:{t:'ตั้งค่า',s:'เลือกชุดสี · โหมดสว่าง/มืด'}
 };
-document.querySelectorAll('.nav-i').forEach(n=>{
-  n.addEventListener('click',()=>{
-    const v=n.dataset.v;
-    document.querySelectorAll('.nav-i').forEach(x=>x.classList.remove('active'));
-    n.classList.add('active');
-    document.querySelectorAll('.view').forEach(x=>x.classList.remove('show'));
-    document.getElementById('v-'+v).classList.add('show');
-    document.getElementById('tbTitle').childNodes[0].nodeValue=NAV_META[v].t;
-    document.getElementById('tbSub').textContent=NAV_META[v].s;
-    app.classList.remove('mobile-open');
-    document.querySelector('.content').scrollIntoView({behavior:'smooth',block:'start'});
-  });
-});
-
-/* ============ SIDEBAR COLLAPSE / MOBILE ============ */
+document.querySelectorAll('.nav-i').forEach(n=>n.addEventListener('click',()=>{
+  const v=n.dataset.v;
+  document.querySelectorAll('.nav-i').forEach(x=>x.classList.remove('active'));
+  n.classList.add('active');
+  document.querySelectorAll('.view').forEach(x=>x.classList.remove('show'));
+  document.getElementById('v-'+v).classList.add('show');
+  document.getElementById('tbTitle').childNodes[0].nodeValue=NAV_META[v].t;
+  document.getElementById('tbSub').textContent=NAV_META[v].s;
+  app.classList.remove('mobile-open');
+  document.querySelector('.content').scrollIntoView({behavior:'smooth',block:'start'});
+}));
 const burger=document.getElementById('burger');
 const isMobile=()=>window.matchMedia('(max-width:820px)').matches;
-burger.addEventListener('click',()=>{
-  if(isMobile()) app.classList.toggle('mobile-open');
-  else app.classList.toggle('collapsed');
-});
+burger.addEventListener('click',()=>{if(isMobile())app.classList.toggle('mobile-open');else app.classList.toggle('collapsed');});
 document.getElementById('scrim').addEventListener('click',()=>app.classList.remove('mobile-open'));
 
-/* ============ THEME TOGGLE ============ */
 const themeBtn=document.getElementById('themeBtn');
 const themeIcon=document.getElementById('themeIcon');
 const sunIcon='<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>';
 const moonIcon='<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>';
-let isDark=false;
-function applyTheme(dark){
-  isDark=dark;
-  document.documentElement.setAttribute('data-theme',dark?'dark':'light');
-  themeIcon.innerHTML=dark?sunIcon:moonIcon;
-  themeBtn.title=dark?'สลับเป็นโหมดสว่าง':'สลับเป็นโหมดมืด';
-}
-themeBtn.addEventListener('click',()=>{applyTheme(!isDark);saveAccent();});
-applyTheme(false);
-
-/* ============ ACCENT COLOR THEMES ============ */
+function applyTheme(dark){isDark=dark;document.documentElement.setAttribute('data-theme',dark?'dark':'light');themeIcon.innerHTML=dark?sunIcon:moonIcon;themeBtn.title=dark?'สลับเป็นโหมดสว่าง':'สลับเป็นโหมดมืด';}
+themeBtn.addEventListener('click',()=>{applyTheme(!isDark);saveSettings();});
 const ACCENTS=[
   {id:'blue',name:'น้ำเงิน',desc:'ค่าเริ่มต้น',sw:['#3b82f6','#2563eb','#1e40af']},
   {id:'green',name:'เขียวมรกต',desc:'สดชื่น สบายตา',sw:['#10b981','#059669','#047857']},
   {id:'purple',name:'ม่วง',desc:'หรูหรา ทันสมัย',sw:['#8b5cf6','#7c3aed','#6d28d9']},
   {id:'orange',name:'ส้มอบอุ่น',desc:'อบอุ่น มีพลัง',sw:['#f97316','#ea580c','#c2410c']},
-  {id:'pink',name:'ชมพูแดง',desc:'สดใส โดดเด่น',sw:['#ec4899','#db2777','#be185d']},
+  {id:'pink',name:'ชมพูแดง',desc:'สดใส โดดเด่น',sw:['#ec4899','#db2777','#be185d']}
 ];
-let currentAccent='blue';
-function applyAccent(id){
-  currentAccent=id;
-  if(id==='blue') document.documentElement.removeAttribute('data-accent');
-  else document.documentElement.setAttribute('data-accent',id);
-  // re-render charts that bake colors into SVG/inline styles
-  try{renderAll();}catch(e){}
-  renderThemeGrid();
-}
+function applyAccent(id){currentAccent=id;if(id==='blue')document.documentElement.removeAttribute('data-accent');else document.documentElement.setAttribute('data-accent',id);try{renderAll();}catch(e){}renderThemeGrid();}
 function renderThemeGrid(){
-  const g=document.getElementById('themeGrid'); if(!g)return;
-  g.innerHTML='';
-  ACCENTS.forEach(a=>{
-    const active=a.id===currentAccent?'active':'';
-    g.insertAdjacentHTML('beforeend',
-      `<button class="theme-card ${active}" data-accent="${a.id}" style="--tc1:${a.sw[0]}">
-        <div class="theme-swatch">${a.sw.map(c=>`<span style="background:${c}"></span>`).join('')}</div>
-        <div class="tname">${a.name}</div><div class="tdesc">${a.desc}</div>
-      </button>`);
+  const g=document.getElementById('themeGrid');if(!g)return;g.innerHTML='';
+  ACCENTS.forEach(a=>g.insertAdjacentHTML('beforeend',`<button class="theme-card ${a.id===currentAccent?'active':''}" data-accent="${a.id}" style="--tc1:${a.sw[0]}"><div class="theme-swatch">${a.sw.map(c=>`<span style="background:${c}"></span>`).join('')}</div><div class="tname">${esc(a.name)}</div><div class="tdesc">${esc(a.desc)}</div></button>`));
+  g.querySelectorAll('.theme-card').forEach(c=>c.addEventListener('click',()=>{applyAccent(c.dataset.accent);saveSettings();toast('เปลี่ยนชุดสีแล้ว');}));
+}
+document.getElementById('setThemeToggleBtn').addEventListener('click',()=>{applyTheme(!isDark);saveSettings();});
+
+function pNum(s){if(s==null)return null;const v=parseFloat(String(s).replace(/,/g,'').trim());return isNaN(v)?null:v;}
+function cleanText(s){return String(s||'').replace(/\s+/g,' ').trim();}
+function normalizeYear(y){
+  y=Number(y);
+  if(y<100)y+=2500;
+  if(y>2400)y-=543;
+  return y;
+}
+function dateFromFilename(name,lastModified){
+  const s=String(name||'');
+  let m=/(\d{4})[-_./]?(\d{2})[-_./]?(\d{2})/.exec(s);
+  if(m)return new Date(normalizeYear(m[1]),+m[2]-1,+m[3],12);
+  m=/(\d{2})[-_./](\d{2})[-_./](\d{2,4})/.exec(s);
+  if(m)return new Date(normalizeYear(m[3]),+m[2]-1,+m[1],12);
+  return lastModified?new Date(lastModified):new Date();
+}
+function amountFromFilename(name){
+  const m=String(name||'').replace(/,/g,'').match(/\d+\.\d{2}/g);
+  return m?pNum(m[m.length-1]):null;
+}
+function fileBase(name){return String(name||'').replace(/\.[^.]+$/,'').replace(/[_-]+/g,' ').trim();}
+const OCR_CONFIG={
+  script:'https://cdn.jsdelivr.net/npm/tesseract.js@7.0.0/dist/tesseract.min.js',
+  workerPath:'https://cdn.jsdelivr.net/npm/tesseract.js@7.0.0/dist/worker.min.js',
+  corePath:'https://cdn.jsdelivr.net/npm/tesseract.js-core@7.0.0',
+  langPath:'https://tessdata.projectnaptha.com/4.0.0'
+};
+let ocrScriptPromise=null,ocrWorkerPromise=null;
+function loadScriptOnce(src){
+  if(ocrScriptPromise)return ocrScriptPromise;
+  ocrScriptPromise=new Promise((resolve,reject)=>{
+    if(window.Tesseract){resolve();return;}
+    const s=document.createElement('script');
+    s.src=src;s.async=true;s.crossOrigin='anonymous';
+    s.onload=()=>resolve();
+    s.onerror=()=>reject(new Error('โหลด OCR ไม่สำเร็จ กรุณาตรวจสอบอินเทอร์เน็ต'));
+    document.head.appendChild(s);
   });
-  g.querySelectorAll('.theme-card').forEach(c=>c.addEventListener('click',()=>{
-    applyAccent(c.dataset.accent); saveAccent(); toast('เปลี่ยนชุดสีเป็น "'+ACCENTS.find(x=>x.id===c.dataset.accent).name+'"');
-  }));
+  return ocrScriptPromise;
 }
-// persistence via IndexedDB (settings record)
-async function saveAccent(){ try{ await idbPut([{key:'__settings',accent:currentAccent,dark:isDark}]); }catch(e){} }
-async function loadAccent(){
-  try{ const all=await idbAll(); const s=all.find(r=>r.key==='__settings');
-    if(s){ if(s.accent) applyAccent(s.accent); if(s.dark) applyTheme(true); }
-  }catch(e){}
-  renderThemeGrid();
+async function getOcrWorker(){
+  if(ocrWorkerPromise)return ocrWorkerPromise;
+  ocrWorkerPromise=(async()=>{
+    await loadScriptOnce(OCR_CONFIG.script);
+    if(!window.Tesseract||!Tesseract.createWorker)throw new Error('OCR ยังไม่พร้อมใช้งาน');
+    const worker=await Tesseract.createWorker(['tha','eng'],1,{
+      workerPath:OCR_CONFIG.workerPath,
+      corePath:OCR_CONFIG.corePath,
+      langPath:OCR_CONFIG.langPath,
+      cacheMethod:'write',
+      logger:m=>{
+        if(!m||!m.status)return;
+        const pct=Math.round((m.progress||0)*100);
+        if(pct&&typeof pSub!=='undefined')pSub.textContent='OCR: '+m.status+' '+pct+'%';
+      }
+    });
+    try{await worker.setParameters({preserve_interword_spaces:'1'});}catch(e){}
+    return worker;
+  })();
+  return ocrWorkerPromise;
 }
-document.getElementById('setThemeToggleBtn').addEventListener('click',()=>{applyTheme(!isDark);saveAccent();});
-
-/* ============ INIT ============ */
-
-/* ---------- month code helpers ---------- */
-const MONTH_ABBR=['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
-const MONTH_FULL=['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
-
-/* ---------- PDF parser (mirrors validated Python/pdf.js logic) ---------- */
-const PARSE_SKIP=['Internet','SMS','รับสงSMS','สวนเกิน','Current Charge Before','VAT','Total Current','ภาษีมูลคา','รวมคาบริการ','รวมคาใช','คาบริการที่เรียกเก็บ','คาบริการตามโปรโมชั่น','คา Internet','จำนวนเงิน','ขอมูลหักภาษี','ภาษี ณ'];
-function pNum(s){if(s==null)return null;s=(''+s).replace(/,/g,'').trim();if(s==='-'||s==='')return 0;const v=parseFloat(s);return isNaN(v)?null:v;}
-function pMin(s){const m=/(\d+):(\d+)/.exec(s);return m?Math.round((+m[1]+ +m[2]/60)*10)/10:0;}
-function pGb(s){if(!s)return 0;const g=/([\d,]+)\s*GB/.exec(s),mb=/([\d,]+)\s*MB/.exec(s);let t=0;if(g)t+=pNum(g[1]);if(mb)t+=pNum(mb[1])/1024;return Math.round(t*100)/100;}
-function classifyCause(l){
-  if(/Roaming|โรมมิ่ง|Ready2Fly|Non-Stop/i.test(l))return 'roaming';
-  if(/ตางประเทศ|IDD|ระหวางประเทศ/.test(l))return 'intl';
-  if(/SMS|ขอความ/.test(l))return 'sms';
-  if(/Internet|เน็ต|Net/i.test(l))return 'internet';
-  if(/NumberShare|AppleWatch/i.test(l))return 'addon';
-  if(/โทร|นาที|ชวงเวลา/.test(l))return 'call';
-  return 'package';
+function isWeakPayee(name){
+  const s=cleanText(name);
+  return !s||/^(OCR Slip|Slip|สลิป OCR)$/i.test(s)||/^[A-Z]\d{12,}$/.test(s);
 }
-function reconstructText(tc){
-  const lines={};
-  tc.items.forEach(it=>{const k=Math.round(it.transform[5]);(lines[k]=lines[k]||[]).push({x:it.transform[4],s:it.str});});
-  return Object.keys(lines).map(Number).sort((a,b)=>b-a).map(y=>lines[y].sort((a,b)=>a.x-b.x).map(i=>i.s).join('')).join('\n');
+async function imageBlobToCanvas(blob,max=2200){
+  const bitmap=await createImageBitmap(blob);
+  const scale=Math.min(max/Math.max(bitmap.width,bitmap.height),Math.max(1,1500/Math.max(bitmap.width,1)));
+  const canvas=document.createElement('canvas');
+  canvas.width=Math.max(1,Math.round(bitmap.width*scale));
+  canvas.height=Math.max(1,Math.round(bitmap.height*scale));
+  const ctx=canvas.getContext('2d',{willReadFrequently:true});
+  ctx.drawImage(bitmap,0,0,canvas.width,canvas.height);
+  return canvas;
 }
-function parsePage2(text){
-  const L=text.split('\n').map(l=>l.trim());
-  const d={phone:null,pkgName:'',pkgFee:0,sms:0,over:0,callMin:0,callNight:0,gb:0,beforeVat:0,vat:0,net:0,charges:[]};
-  let sec=null;
-  for(let i=0;i<L.length;i++){
-    const l=L[i];
-    if(d.phone===null&&l.includes('หมายเลข')){const m=/(0\d{9})/.exec(l);if(m)d.phone=m[1];}
-    if(l.includes('แพ็กเกจของคุณ')&&L[i+1])d.pkgName=L[i+1].slice(0,70);
-    if(l.includes('Actual Usage')){sec='a';continue;}
-    if(l.includes('คาบริการที่เรียกเก็บ')||l.includes('Current Charges')){sec='c';continue;}
-    if(l.includes('Current Charge Before')||l.includes('รวมคาบริการกอนภาษี')){const m=/([\d,.]+)\s*$/.exec(l);d.beforeVat=pNum(m&&m[1])||0;sec=null;}
-    if(sec==='a'){
-      const mm=/(\d+:\d+)\s+([\d,.\-]+)\s*$/.exec(l);
-      if(mm&&(l.includes('โทร')||l.includes('ชวงเวลา'))){const mins=pMin(mm[1]);d.callMin+=mins;if(l.includes('18:00')||l.includes('กลางคืน'))d.callNight+=mins;}
-      const gm=/Internet\s+(.+?)\s+(-|[\d,.]+)\s*$/.exec(l);
-      if(gm)d.gb=pGb(gm[1]);
-    }
-    if(sec==='c'){
-      const cm=/(.+?)\s+([\d,]+\.\d{2})\s*$/.exec(l);
-      if(cm&&!/รวมคา|VAT|ภาษี|Before|Total/.test(cm[1]))d.charges.push({label:cm[1].trim().slice(0,80),baht:pNum(cm[2]),cat:classifyCause(cm[1])});
-      if(l.includes('SMS')||l.includes('รับสงSMS')){const m=/([\d,.]+)\s*$/.exec(l);if(m&&pNum(m[1])!=null)d.sms+=pNum(m[1])||0;continue;}
-      if(l.startsWith('Internet')){const m=/([\d,.]+)\s*$/.exec(l);if(m&&pNum(m[1])!=null)d.over+=pNum(m[1])||0;continue;}
-      if(PARSE_SKIP.some(k=>l.includes(k)))continue;
-      const m=/([\d,]+\.\d{2})\s*$/.exec(l);if(m){const v=pNum(m[1]);if(v!=null)d.pkgFee+=v;}
-    }
-    if(l.includes('VAT 7%')||l.startsWith('ภาษีมูลคาเพิ่ม')){const m=/([\d,.]+)\s*$/.exec(l);if(m)d.vat=pNum(m[1])||0;}
-    if(l.includes('Total Current Charge')||l.includes('รวมคาใชบริการรอบปจจุบัน')){const m=/([\d,.]+)\s*$/.exec(l);d.net=pNum(m&&m[1])||0;}
+function canvasToSlipImage(canvas,max=1200){
+  const scale=Math.min(1,max/Math.max(canvas.width,canvas.height));
+  const out=document.createElement('canvas');
+  out.width=Math.max(1,Math.round(canvas.width*scale));
+  out.height=Math.max(1,Math.round(canvas.height*scale));
+  const ctx=out.getContext('2d');
+  ctx.fillStyle='#fff';
+  ctx.fillRect(0,0,out.width,out.height);
+  ctx.drawImage(canvas,0,0,out.width,out.height);
+  return out.toDataURL('image/jpeg',0.86);
+}
+async function slipPreviewData(blob,name){
+  if(/\.pdf$/i.test(name)||blob.type==='application/pdf'){
+    const lib=await ensurePdfjs();
+    const doc=await lib.getDocument({data:new Uint8Array(await blob.arrayBuffer()),useSystemFonts:true}).promise;
+    const page=await doc.getPage(1);
+    const viewport=page.getViewport({scale:1.6});
+    const canvas=document.createElement('canvas');
+    canvas.width=viewport.width;canvas.height=viewport.height;
+    await page.render({canvasContext:canvas.getContext('2d'),viewport}).promise;
+    return canvasToSlipImage(canvas);
   }
-  const der=Math.round((d.beforeVat-d.sms-d.over)*100)/100;
-  if(Math.abs(d.pkgFee-der)>0.05)d.pkgFee=der;
-  return d;
+  return canvasToSlipImage(await imageBlobToCanvas(blob,1400));
 }
-// month from invoice number W-IN-18-69MM-... -> MM (1-12), and year 69 -> 2569
-function monthFromText(text,filename){
-  let m=/W-?IN-?\d+-?69(\d{2})/i.exec(text)||/W-?IN-?\d+-?69(\d{2})/i.exec(filename||'');
-  if(m){const mm=parseInt(m[1],10);if(mm>=1&&mm<=12)return mm;}
-  // fallback: issue date dd/mm/yyyy
-  let d=/(\d{2})\/(\d{2})\/(\d{4})/.exec(text);
-  if(d)return parseInt(d[2],10);
+function prepareOcrCanvas(canvas){
+  const out=document.createElement('canvas');
+  const scale=Math.max(1,Math.min(2.6,1800/Math.max(canvas.width,1)));
+  out.width=Math.round(canvas.width*scale);
+  out.height=Math.round(canvas.height*scale);
+  const ctx=out.getContext('2d',{willReadFrequently:true});
+  ctx.drawImage(canvas,0,0,out.width,out.height);
+  const img=ctx.getImageData(0,0,out.width,out.height),d=img.data;
+  for(let i=0;i<d.length;i+=4){
+    let g=d[i]*.299+d[i+1]*.587+d[i+2]*.114;
+    g=Math.max(0,Math.min(255,(g-128)*1.35+128));
+    d[i]=d[i+1]=d[i+2]=g;
+    d[i+3]=255;
+  }
+  ctx.putImageData(img,0,0);
+  return out;
+}
+function parseSlipAmount(text){
+  const lines=String(text||'').split(/\r?\n/).map(cleanText).filter(Boolean);
+  const candidates=[];
+  lines.forEach((line,i)=>{
+    const fixed=line.replace(/[Oo]/g,'0').replace(/[฿]/g,' บาท ');
+    const nums=fixed.match(/(?:\d{1,3}(?:,\d{3})+|\d+)[.,]\d{2}/g)||[];
+    nums.forEach(raw=>{
+      const val=pNum(raw);
+      if(!val||val<=0)return;
+      const around=lines.slice(Math.max(0,i-2),i+3).join(' ').toLowerCase();
+      let score=1;
+      if(/จำนวนเงิน|ยอดเงิน|ยอดชำระ|amount|total|paid|payment|โอน|จ่าย|บาท/.test(around))score+=6;
+      if(/ค่าธรรมเนียม|fee|commission/.test(around))score-=5;
+      if(/รหัส|reference|ref|transaction|วันที่|date|เวลา|time/.test(around))score-=2;
+      candidates.push({val,score,line});
+    });
+  });
+  candidates.sort((a,b)=>b.score-a.score||b.val-a.val);
+  return candidates[0]?candidates[0].val:null;
+}
+function parseSlipPayee(text){
+  const lines=String(text||'').split(/\r?\n/).map(l=>cleanText(l.replace(/[|]/g,' '))).filter(Boolean);
+  const labelled=/(?:ผู้รับเงิน|ผู้รับโอน|ชื่อบัญชี|ร้านค้า|ผู้รับ|ปลายทาง|merchant|payee|receiver|to)\s*[:：-]?\s*(.+)/i;
+  for(const line of lines){
+    const m=labelled.exec(line);
+    if(m&&isGoodPayeeLine(m[1]))return cleanupPayee(m[1]);
+  }
+  const candidates=[];
+  lines.forEach((line,i)=>{
+    if(!isGoodPayeeLine(line))return;
+    let score=0;
+    if(/[A-Z]{3,}/.test(line))score+=3;
+    if(/[ก-๙]{3,}/.test(line))score+=2;
+    if(/\(.+\)/.test(line))score+=3;
+    if(/merchant|shop|store|ร้าน/i.test(line))score+=2;
+    if(i>Math.floor(lines.length*.35))score+=1;
+    candidates.push({line,score});
+  });
+  candidates.sort((a,b)=>b.score-a.score||b.line.length-a.line.length);
+  return candidates[0]?cleanupPayee(candidates[0].line):'';
+}
+function isGoodPayeeLine(line){
+  const s=cleanText(line);
+  if(s.length<3||s.length>80)return false;
+  if(/^(x+|[-\d\s.,:]+)$/i.test(s))return false;
+  if(/[A-Z]\d{10,}/.test(s))return false;
+  if(/krungthai|กรุงไทย|จ่ายบิล|สำเร็จ|รหัส|จำนวนเงิน|ค่าธรรมเนียม|วันที่|บาท|reference|transaction|amount|fee|date|time|promptpay/i.test(s))return false;
+  return /[A-Z]{3,}|[ก-๙]{3,}/.test(s);
+}
+function cleanupPayee(line){
+  return cleanText(String(line||'').replace(/\s+บาท.*$/,'').replace(/^[>:\-\s]+/,'').replace(/[;|]+$/,''));
+}
+function parseSlipRef(text){
+  const value=String(text||'');
+  const labelled=/(?:รหัสอ้างอิง|เลขอ้างอิง|รหัสรายการ|รหัสธุรกรรม|reference|ref(?:erence)?|transaction(?: id)?|trace)\s*[:：-]?\s*([A-Z0-9-]{10,})/i.exec(value);
+  if(labelled)return labelled[1].replace(/[^A-Z0-9]/gi,'').toUpperCase();
+  const bankRef=/[A-Z]\d{14,}/.exec(value);
+  if(bankRef)return bankRef[0].toUpperCase();
+  const longRef=/\b[A-Z0-9]{16,}\b/i.exec(value);
+  return longRef?longRef[0].toUpperCase():'';
+}
+function parseSlipDate(text,ref){
+  const value=String(text||'');
+  let m=/(\d{1,2})\s*(ม\.?ค\.?|มกราคม|ก\.?พ\.?|กุมภาพันธ์|มี\.?ค\.?|มีนาคม|เม\.?ย\.?|เมษายน|พ\.?ค\.?|พฤษภาคม|มิ\.?ย\.?|มิถุนายน|ก\.?ค\.?|กรกฎาคม|ส\.?ค\.?|สิงหาคม|ก\.?ย\.?|กันยายน|ต\.?ค\.?|ตุลาคม|พ\.?ย\.?|พฤศจิกายน|ธ\.?ค\.?|ธันวาคม|jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-zก-๙.]*\s*(\d{2,4})/i.exec(value);
+  if(m){
+    const month=monthIndex(m[2]);
+    if(month>=0){
+      const d=new Date(normalizeYear(m[3]),month,+m[1],12);
+      if(!isNaN(d.getTime()))return d;
+    }
+  }
+  m=/(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{2,4})/.exec(value);
+  if(m){
+    const d=new Date(normalizeYear(m[3]),+m[2]-1,+m[1],12);
+    if(!isNaN(d.getTime()))return d;
+  }
+  m=/((?:20|25)\d{2})(\d{2})(\d{2})/.exec(String(ref||value));
+  if(m){
+    const d=new Date(normalizeYear(m[1]),+m[2]-1,+m[3],12);
+    if(!isNaN(d.getTime()))return d;
+  }
   return null;
 }
-
-/* ---------- PDF reading via pdf.js ---------- */
-let pdfjsReady=null;
+function monthIndex(label){
+  const s=String(label||'').toLowerCase().replace(/\./g,'');
+  const months=[
+    ['มค','มกราคม','jan'],['กพ','กุมภาพันธ์','feb'],['มีค','มีนาคม','mar'],['เมย','เมษายน','apr'],
+    ['พค','พฤษภาคม','may'],['มิย','มิถุนายน','jun'],['กค','กรกฎาคม','jul'],['สค','สิงหาคม','aug'],
+    ['กย','กันยายน','sep'],['ตค','ตุลาคม','oct'],['พย','พฤศจิกายน','nov'],['ธค','ธันวาคม','dec']
+  ];
+  return months.findIndex(list=>list.some(x=>s.startsWith(x)));
+}
+function parseSlipText(text){
+  const ref=parseSlipRef(text);
+  return {amount:parseSlipAmount(text),payee:parseSlipPayee(text),ref,date:parseSlipDate(text,ref),text:String(text||'')};
+}
+async function ocrCanvas(canvas){
+  const worker=await getOcrWorker();
+  const prepared=prepareOcrCanvas(canvas);
+  const res=await worker.recognize(prepared);
+  return parseSlipText(res&&res.data?res.data.text:'');
+}
+async function ocrSlipBlob(blob,name){
+  if(/\.pdf$/i.test(name)||blob.type==='application/pdf'){
+    const lib=await ensurePdfjs();
+    const doc=await lib.getDocument({data:new Uint8Array(await blob.arrayBuffer()),useSystemFonts:true}).promise;
+    const page=await doc.getPage(1);
+    const viewport=page.getViewport({scale:2.4});
+    const canvas=document.createElement('canvas');
+    canvas.width=viewport.width;canvas.height=viewport.height;
+    await page.render({canvasContext:canvas.getContext('2d'),viewport}).promise;
+    return ocrCanvas(canvas);
+  }
+  return ocrCanvas(await imageBlobToCanvas(blob,2200));
+}
 function ensurePdfjs(){
   if(pdfjsReady)return pdfjsReady;
-  pdfjsReady=new Promise((resolve)=>{
-    if(window.__pdfjsReady && window.pdfjsLib){resolve(window.pdfjsLib);return;}
-    window.addEventListener("pdfjs-ready",()=>resolve(window.pdfjsLib),{once:true});
+  pdfjsReady=new Promise((resolve,reject)=>{
+    if(window.__pdfjsReady&&window.pdfjsLib){resolve(window.pdfjsLib);return;}
+    const t=setTimeout(()=>reject(new Error('PDF.js ยังไม่พร้อมใช้งาน')),12000);
+    window.addEventListener('pdfjs-ready',()=>{clearTimeout(t);resolve(window.pdfjsLib);},{once:true});
   });
   return pdfjsReady;
 }
-async function readInvoice(arrayBuf, filename){
-  const lib=await ensurePdfjs();
-  const doc=await lib.getDocument({data:new Uint8Array(arrayBuf),useSystemFonts:true}).promise;
-  if(doc.numPages!==2) return {error:`ไฟล์มี ${doc.numPages} หน้า (ต้องเป็น 2 หน้า) — ข้าม`};
-  const page=await doc.getPage(2);
-  const tc=await page.getTextContent();
-  const text=reconstructText(tc);
-  // also need page 1 / filename for invoice no -> month
-  const p1=await (await doc.getPage(1)).getTextContent();
-  const text1=reconstructText(p1);
-  const d=parsePage2(text);
-  if(!d.phone) return {error:'อ่านเบอร์ไม่ได้ — ข้าม'};
-  const month=monthFromText(text1+'\n'+text, filename);
-  if(!month) return {error:`หาเดือนไม่ได้ (${d.phone}) — ข้าม`};
-  // validation
-  const chk=Math.round((d.beforeVat+d.vat)*100)/100;
-  if(Math.abs(chk-d.net)>0.5) return {error:`ยอดไม่สมดุล (${d.phone}) — ข้าม`};
-  return {data:d, month};
+async function readSlip(entry){
+  let ocr;
+  try{
+    logProg('กำลังอ่าน OCR: '+entry.name,'ok');
+    ocr=await ocrSlipBlob(entry.blob,entry.name);
+  }catch(e){
+    return {error:'อ่าน OCR ไม่สำเร็จ: '+e.message};
+  }
+  let slipImage='';
+  try{slipImage=await slipPreviewData(entry.blob,entry.name);}catch(e){logProg('ไม่สามารถสร้างภาพตัวอย่าง: '+entry.name,'err');}
+  const fallbackAmount=amountFromFilename(entry.name);
+  const date=ocr.date||dateFromFilename(entry.name,entry.lastModified);
+  const amount=ocr.amount??fallbackAmount??0;
+  const payee=ocr.payee||fileBase(entry.name)||'สลิป OCR';
+  const ref=ocr.ref||'';
+  const category=categoryFromText(payee+' '+(ocr.text||''));
+  const bank=detectBank((ocr.text||'')+' '+entry.name+' '+payee);
+  const needsReview=!amount||isWeakPayee(payee)||!ref;
+  const note=needsReview?'OCR อ่านยอดเงิน ผู้รับโอน หรือรหัสอ้างอิงไม่ครบ':'OCR อ่านยอดเงิน ผู้รับโอน วันที่ และรหัสอ้างอิงได้ครบ';
+  const data={date:date.toISOString(),amount,payee,category,bank,channel:'OCR',ref,source:entry.name,rawText:'',ocrText:ocr.text||'',slipImage,needsReview,note};
+  data.key=makeKey(data);
+  return {data:normalizeRecord(data)};
 }
-
-/* ---------- IndexedDB store ---------- */
-const DB_NAME='ais_dashboard', STORE='invoices';
-function idbOpen(){return new Promise((res,rej)=>{const r=indexedDB.open(DB_NAME,1);
-  r.onupgradeneeded=()=>{const db=r.result;if(!db.objectStoreNames.contains(STORE))db.createObjectStore(STORE,{keyPath:'key'});};
-  r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error);});}
-async function idbPut(rows){const db=await idbOpen();return new Promise((res,rej)=>{const tx=db.transaction(STORE,'readwrite');const st=tx.objectStore(STORE);
-  rows.forEach(rec=>st.put(rec));tx.oncomplete=()=>res();tx.onerror=()=>rej(tx.error);});}
-async function idbAll(){const db=await idbOpen();return new Promise((res,rej)=>{const tx=db.transaction(STORE,'readonly');const rq=tx.objectStore(STORE).getAll();
-  rq.onsuccess=()=>res(rq.result||[]);rq.onerror=()=>rej(rq.error);});}
-async function idbClear(){const db=await idbOpen();return new Promise((res,rej)=>{const tx=db.transaction(STORE,'readwrite');
-  tx.objectStore(STORE).clear();tx.oncomplete=()=>res();tx.onerror=()=>rej(tx.error);});}
-
-/* ---------- name map (phone -> thai name), seeded from current D, learns new ---------- */
-let NAMEMAP={};
-D.rows.forEach(r=>NAMEMAP[r.phone]=r.name);
-// snapshot of demo data to restore when user clears
-const SEED_D=JSON.parse(JSON.stringify(D)), SEED_CAUSE=JSON.parse(JSON.stringify(CAUSE)), SEED_USAGE=JSON.parse(JSON.stringify(USAGE));
-
-/* ---------- rebuild D / CAUSE / USAGE from a flat list of {phone,month,...} records ---------- */
-function rebuildAll(records){
-  // group by month present
-  const monthsPresent=[...new Set(records.map(r=>r.month))].sort((a,b)=>a-b);
-  const ml=monthsPresent.map(m=>MONTH_ABBR[m-1]);
-  const mf=monthsPresent.map(m=>MONTH_FULL[m-1]);
-  const mIndex=new Map(monthsPresent.map((m,i)=>[m,i]));
-  const n=monthsPresent.length;
-  // group by phone
-  const byPhone={};
-  records.forEach(r=>{(byPhone[r.phone]=byPhone[r.phone]||{})[r.month]=r;});
-  const phones=Object.keys(byPhone);
-  const rows=[];
-  phones.forEach(ph=>{
-    const arr=monthsPresent.map(m=>byPhone[ph][m]||null);
-    const vals=arr.map(x=>x?Math.round(x.net*100)/100:0);
-    const total=Math.round(vals.reduce((s,v)=>s+v,0)*100)/100;
-    const last=arr.slice().reverse().find(x=>x)||{};
-    rows.push({phone:ph,name:NAMEMAP[ph]||last.pkgName&&ph||ph,
-      vals,total,avg:Math.round(total/n*100)/100,
-      pkg:last.pkgName||'',
-      pkgFee:arr.map(x=>x?Math.round(x.pkgFee*100)/100:0),
-      sms:arr.map(x=>x?Math.round(x.sms*100)/100:0),
-      over:arr.map(x=>x?Math.round(x.over*100)/100:0),
-      callMin:arr.map(x=>x?Math.round(x.callMin):0),
-      gb:arr.map(x=>x?Math.round(x.gb*10)/10:0),
-      _charges:arr.map(x=>x?x.charges||[]:[]),
-      _callNight:arr.map(x=>x?Math.round(x.callNight||0):0),
-    });
-  });
-  // use NAMEMAP or phone for name; if unknown keep phone as name
-  rows.forEach(r=>{if(!NAMEMAP[r.phone])r.name=r.phone;});
-  const mt=monthsPresent.map((m,i)=>Math.round(rows.reduce((s,r)=>s+r.vals[i],0)*100)/100);
-  const grand=Math.round(mt.reduce((s,v)=>s+v,0)*100)/100;
-  const allv=rows.flatMap(r=>r.vals).filter(v=>v>0);
-  const newD={rows,ml,mf,mt,grand,vmax:Math.max(...allv,1),vmin:Math.min(...allv,0),n,
-    avg_all:Math.round(grand/(phones.length*n)*100)/100, year:2569};
-  // CAUSE + USAGE
-  const CAT_TH={roaming:'แพ็กเกจโรมมิ่ง/ใช้งานต่างประเทศ',intl:'โทรต่างประเทศ',sms:'ค่า SMS/บริการข้อความ',
-    internet:'ค่าเน็ต/แพ็กเกจเสริมเน็ต',addon:'บริการเสริม',call:'ค่าโทรส่วนเกิน',package:'รายการเหมาจ่าย'};
-  const newCAUSE={},newUSAGE={};
-  rows.forEach(r=>{
-    const cArr=[],uArr=[];
-    for(let i=0;i<n;i++){
-      const reasons=[],extra=[];
-      if(i>0){
-        const cur=r._charges[i]||[], prev=r._charges[i-1]||[];
-        const pm={};prev.forEach(c=>pm[c.label.slice(0,25)]=c.baht);
-        cur.forEach(c=>{const k=c.label.slice(0,25),was=pm[k]||0,diff=c.baht-was,tag=CAT_TH[c.cat]||'รายการอื่น';
-          if(!(k in pm)&&c.baht>30)reasons.push('เพิ่มรายการ'+tag+' '+Math.round(c.baht)+' บาท');
-          else if(diff>30)reasons.push(tag+'เพิ่มขึ้น '+Math.round(diff)+' บาท');});
-        const callDiff=r.callMin[i]-r.callMin[i-1], gbDiff=r.gb[i]-r.gb[i-1], nightDiff=r._callNight[i]-r._callNight[i-1];
-        if(nightDiff>20)extra.push('โทรกลางคืนเพิ่ม '+Math.round(nightDiff)+' นาที');
-        if(callDiff>30)extra.push('โทรรวมเพิ่ม '+Math.round(callDiff)+' นาที ('+r.callMin[i-1]+'→'+r.callMin[i]+')');
-        if(gbDiff>5)extra.push('ใช้เน็ตเพิ่ม '+Math.round(gbDiff)+' GB');
-      }
-      cArr.push({reasons,extra});
-      const cats=new Set((r._charges[i]||[]).filter(c=>c.baht>0).map(c=>c.cat));
-      uArr.push({callMin:r.callMin[i],night:r._callNight[i],gb:r.gb[i],roaming:cats.has('roaming'),intl:cats.has('intl')});
-    }
-    newCAUSE[r.phone]=cArr;newUSAGE[r.phone]=uArr;
-  });
-  D=newD;CAUSE=newCAUSE;USAGE=newUSAGE;
-}
-
-/* ---------- progress UI ---------- */
-const prog=document.getElementById('progress'),pTitle=document.getElementById('pTitle'),pSub=document.getElementById('pSub'),
-  pFill=document.getElementById('pFill'),pLog=document.getElementById('pLog'),pClose=document.getElementById('pClose'),pSpin=document.getElementById('pSpin');
-function showProg(t){prog.classList.add('show');pSpin.style.display='inline-block';pClose.classList.remove('show');pTitle.textContent=t;pSub.textContent='';pFill.style.width='0%';pLog.innerHTML='';}
-function logProg(html,cls){pLog.insertAdjacentHTML('beforeend',`<div class="${cls||''}">${html}</div>`);pLog.scrollTop=pLog.scrollHeight;}
-function setProg(pct,sub){pFill.style.width=pct+'%';if(sub!=null)pSub.textContent=sub;}
-function endProg(t){pSpin.style.display='none';pTitle.textContent=t;pClose.classList.add('show');}
-pClose.addEventListener('click',()=>prog.classList.remove('show'));
-function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3200);}
-
-/* ---------- ingest files ---------- */
-async function collectPdfs(fileList){
-  // returns array of {name, buffer}
+async function collectSlipFiles(fileList){
   const out=[];
   for(const f of fileList){
     const lower=f.name.toLowerCase();
     if(lower.endsWith('.zip')){
       if(typeof JSZip==='undefined'){logProg('JSZip ยังโหลดไม่เสร็จ ลองใหม่','err');continue;}
       const zip=await JSZip.loadAsync(await f.arrayBuffer());
-      const entries=Object.values(zip.files).filter(e=>!e.dir&&e.name.toLowerCase().endsWith('.pdf'));
-      for(const e of entries){out.push({name:e.name.split('/').pop(),buffer:await e.async('arraybuffer')});}
-    }else if(lower.endsWith('.pdf')){
-      out.push({name:f.name,buffer:await f.arrayBuffer()});
+      const entries=Object.values(zip.files).filter(e=>!e.dir&&/\.(pdf|png|jpe?g|webp|bmp|gif)$/i.test(e.name));
+      for(const e of entries)out.push({name:e.name.split('/').pop(),blob:await e.async('blob'),lastModified:f.lastModified});
+    }else if(/\.(pdf|png|jpe?g|webp|bmp|gif)$/i.test(lower)){
+      out.push({name:f.name,blob:f,lastModified:f.lastModified});
     }
   }
   return out;
 }
+
+const DB_NAME='my_bill_analyzer',STORE='slips';
+function idbOpen(){return new Promise((res,rej)=>{const r=indexedDB.open(DB_NAME,1);r.onupgradeneeded=()=>{const db=r.result;if(!db.objectStoreNames.contains(STORE))db.createObjectStore(STORE,{keyPath:'key'});};r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error);});}
+async function idbPut(rows){const db=await idbOpen();return new Promise((res,rej)=>{const tx=db.transaction(STORE,'readwrite'),st=tx.objectStore(STORE);rows.forEach(r=>st.put(r));tx.oncomplete=()=>res();tx.onerror=()=>rej(tx.error);});}
+async function idbAll(){const db=await idbOpen();return new Promise((res,rej)=>{const tx=db.transaction(STORE,'readonly'),rq=tx.objectStore(STORE).getAll();rq.onsuccess=()=>res(rq.result||[]);rq.onerror=()=>rej(rq.error);});}
+async function idbClear(){const db=await idbOpen();return new Promise((res,rej)=>{const tx=db.transaction(STORE,'readwrite');tx.objectStore(STORE).clear();tx.oncomplete=()=>res();tx.onerror=()=>rej(tx.error);});}
+async function saveSettings(){try{await idbPut([{key:'__settings',accent:currentAccent,dark:isDark}]);}catch(e){}}
+async function loadSettings(){try{const all=await idbAll();const s=all.find(r=>r.key==='__settings');if(s){if(s.accent)applyAccent(s.accent);if(s.dark)applyTheme(true);}}catch(e){}renderThemeGrid();}
+
+const prog=document.getElementById('progress'),pTitle=document.getElementById('pTitle'),pSub=document.getElementById('pSub'),pFill=document.getElementById('pFill'),pLog=document.getElementById('pLog'),pClose=document.getElementById('pClose'),pSpin=document.getElementById('pSpin');
+function showProg(t){prog.classList.add('show');pSpin.style.display='inline-block';pClose.classList.remove('show');pTitle.textContent=t;pSub.textContent='';pFill.style.width='0%';pLog.innerHTML='';}
+function logProg(text,cls){const div=document.createElement('div');div.className=cls||'';div.textContent=text;pLog.appendChild(div);pLog.scrollTop=pLog.scrollHeight;}
+function setProg(pct,sub){pFill.style.width=pct+'%';if(sub!=null)pSub.textContent=sub;}
+function endProg(t){pSpin.style.display='none';pTitle.textContent=t;pClose.classList.add('show');}
+pClose.addEventListener('click',()=>prog.classList.remove('show'));
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3200);}
+
 async function handleFiles(fileList){
   if(!fileList||!fileList.length)return;
-  showProg('กำลังเตรียมไฟล์…');
-  let pdfs;
-  try{pdfs=await collectPdfs(fileList);}catch(e){endProg('เกิดข้อผิดพลาดในการอ่าน zip');logProg(e.message,'err');return;}
-  if(!pdfs.length){endProg('ไม่พบไฟล์ PDF');logProg('ไม่พบไฟล์ .pdf ในสิ่งที่อัปโหลด','err');return;}
-  pTitle.textContent='กำลังอ่านใบแจ้งหนี้…';
-  // load existing records from idb, key by phone|month (skip settings)
+  showProg('กำลังเตรียมสลิป…');
+  let entries;
+  try{entries=await collectSlipFiles(fileList);}catch(e){endProg('เกิดข้อผิดพลาดในการอ่านไฟล์');logProg(e.message,'err');return;}
+  if(!entries.length){endProg('ไม่พบไฟล์สลิปที่รองรับ');logProg('รองรับ .jpg .jpeg .png .webp .pdf และ .zip','err');return;}
   let existing=[];
   try{existing=(await idbAll()).filter(r=>r.key&&!r.key.startsWith('__'));}catch(e){}
-  const recMap=new Map(existing.map(r=>[r.key,r]));
-  let okN=0,skipN=0,monthsTouched=new Set();
-  for(let i=0;i<pdfs.length;i++){
-    setProg(Math.round((i+1)/pdfs.length*100), `อ่าน ${i+1}/${pdfs.length} ไฟล์`);
+  const recMap=new Map();
+  const seenSlipIds=new Map();
+  existing.map(normalizeRecord).forEach(r=>{
+    r.key=makeKey(r);
+    const sid=slipIdentity(r);
+    if(!seenSlipIds.has(sid)){seenSlipIds.set(sid,r.key);recMap.set(r.key,r);}
+    else{
+      const oldKey=seenSlipIds.get(sid),old=recMap.get(oldKey);
+      if(old&&(!old.amount||old.needsReview)&&r.amount>0)recMap.set(oldKey,{...old,...r,key:oldKey});
+    }
+  });
+  let okN=0,skipN=0,reviewN=0,dupN=Math.max(0,existing.length-recMap.size);
+  pTitle.textContent='กำลัง OCR อ่านข้อมูลจากสลิป…';
+  logProg('ใช้ OCR เป็นแหล่งข้อมูลหลักทั้งหมด','ok');
+  for(let i=0;i<entries.length;i++){
+    setProg(Math.round((i+1)/entries.length*100),`อ่าน ${i+1}/${entries.length} ไฟล์`);
     try{
-      const r=await readInvoice(pdfs[i].buffer, pdfs[i].name);
-      if(r.error){skipN++;logProg('⚠ '+pdfs[i].name+': '+r.error,'err');continue;}
-      const key=r.data.phone+'|'+r.month;
-      recMap.set(key,{key,phone:r.data.phone,month:r.month,
-        net:r.data.net,pkgFee:r.data.pkgFee,sms:r.data.sms,over:r.data.over,
-        callMin:r.data.callMin,callNight:r.data.callNight,gb:r.data.gb,
-        pkgName:r.data.pkgName,charges:r.data.charges});
-      monthsTouched.add(r.month);okN++;
-    }catch(e){skipN++;logProg('⚠ '+pdfs[i].name+': '+e.message,'err');}
+      const r=await readSlip(entries[i]);
+      if(r.error){skipN++;logProg('⚠ '+entries[i].name+': '+r.error,'err');continue;}
+      const sid=slipIdentity(r.data);
+      if(seenSlipIds.has(sid)){
+        const oldKey=seenSlipIds.get(sid),old=recMap.get(oldKey);
+        if(old&&(!old.amount||old.needsReview)&&r.data.amount>0){
+          recMap.set(oldKey,{...old,...r.data,key:oldKey,needsReview:false,note:'อัปเดตยอดเงินจากการอัปโหลดซ้ำ'});
+          okN++;
+          logProg('✓ อัปเดตสลิปเดิม: '+entries[i].name+' · '+fmt(r.data.amount)+' บาท','ok');
+          continue;
+        }
+        dupN++;skipN++;
+        logProg('ข้ามสลิปซ้ำ: '+entries[i].name,'err');
+        continue;
+      }
+      seenSlipIds.set(sid,r.data.key);
+      recMap.set(r.data.key,r.data);
+      if(r.data.needsReview)reviewN++;
+      okN++;
+      logProg('✓ '+entries[i].name+' · '+r.data.payee+' · '+fmt(r.data.amount)+' บาท','ok');
+    }catch(e){skipN++;logProg('⚠ '+entries[i].name+': '+e.message,'err');}
   }
   const allRecords=[...recMap.values()];
   if(!allRecords.length){endProg('ไม่มีข้อมูลที่ใช้ได้');return;}
-  // persist
-  try{await idbPut([...recMap.values()]);}catch(e){logProg('บันทึกลงเครื่องไม่สำเร็จ: '+e.message,'err');}
-  // rebuild & render
-  rebuildAll(allRecords);
-  buildRangePicker();
-  renderAll();
-  const mtxt=[...monthsTouched].sort((a,b)=>a-b).map(m=>MONTH_FULL[m-1]).join(', ');
-  logProg('✓ สำเร็จ '+okN+' ใบ'+(skipN?' · ข้าม '+skipN+' ใบ':''),'ok');
-  logProg('✓ อัปเดตเดือน: '+mtxt,'ok');
-  logProg('✓ ตอนนี้มีข้อมูลทั้งหมด '+D.n+' เดือน, '+D.rows.length+' หมายเลข','ok');
+  try{await idbClear();await idbPut(allRecords);await saveSettings();}catch(e){logProg('บันทึกลงเครื่องไม่สำเร็จ: '+e.message,'err');}
+  RECORDS=allRecords.map(normalizeRecord);
+  D=rebuildData(RECORDS);
+  buildRangePicker();renderAll();
+  logProg('✓ สำเร็จ '+okN+' สลิป'+(dupN?' · ซ้ำ '+dupN:'')+(skipN?' · ข้าม '+skipN:'')+(reviewN?' · ต้องตรวจสอบ '+reviewN:''),'ok');
   endProg('เสร็จสิ้น');
   document.getElementById('dataFoot').textContent='อัปเดตล่าสุด: '+new Date().toLocaleString('th-TH',{day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});
-  toast('อัปเดตข้อมูลเรียบร้อย — '+okN+' ใบ');
+  toast('นำเข้าสลิปเรียบร้อย — '+okN+' รายการ');
 }
-
-/* ---------- wire upload button + drag/drop ---------- */
 const fileInput=document.getElementById('fileInput');
 document.getElementById('uploadBtn').addEventListener('click',()=>fileInput.click());
 fileInput.addEventListener('change',e=>{handleFiles(e.target.files);fileInput.value='';});
 const dropOv=document.getElementById('dropOverlay');
 let dragDepth=0;
 window.addEventListener('dragenter',e=>{e.preventDefault();dragDepth++;dropOv.classList.add('show');});
-window.addEventListener('dragover',e=>{e.preventDefault();});
+window.addEventListener('dragover',e=>e.preventDefault());
 window.addEventListener('dragleave',e=>{e.preventDefault();dragDepth--;if(dragDepth<=0){dragDepth=0;dropOv.classList.remove('show');}});
-window.addEventListener('drop',e=>{e.preventDefault();dragDepth=0;dropOv.classList.remove('show');
-  if(e.dataTransfer&&e.dataTransfer.files&&e.dataTransfer.files.length)handleFiles(e.dataTransfer.files);});
-
-/* ---------- clear / reset ---------- */
+window.addEventListener('drop',e=>{e.preventDefault();dragDepth=0;dropOv.classList.remove('show');if(e.dataTransfer&&e.dataTransfer.files&&e.dataTransfer.files.length)handleFiles(e.dataTransfer.files);});
 document.getElementById('clearBtn').addEventListener('click',async()=>{
-  if(!confirm('ล้างข้อมูลทั้งหมดที่อัปโหลด แล้วกลับไปแสดงข้อมูลตัวอย่าง?\n\n(ข้อมูลที่บันทึกในเครื่องจะถูกลบ — ใช้เมื่อต้องการเริ่มใช้งานด้วยข้อมูลจริงของคุณ)'))return;
-  try{await idbClear();}catch(e){}
-  try{await saveAccent();}catch(e){}
-  D=JSON.parse(JSON.stringify(SEED_D));CAUSE=JSON.parse(JSON.stringify(SEED_CAUSE));USAGE=JSON.parse(JSON.stringify(SEED_USAGE));
-  NAMEMAP={};D.rows.forEach(r=>NAMEMAP[r.phone]=r.name);
-  buildRangePicker();renderAll();
-  document.getElementById('dataFoot').textContent='ข้อมูลตัวอย่าง — กดอัปโหลดเพื่อใช้ข้อมูลจริง';
+  if(!confirm('ล้างข้อมูลสลิปที่อัปโหลด แล้วกลับไปแสดงข้อมูลตัวอย่าง?\n\nข้อมูลที่บันทึกในเครื่องนี้จะถูกลบ'))return;
+  try{await idbClear();await saveSettings();}catch(e){}
+  RECORDS=DEMO_RECORDS.map(normalizeRecord);D=rebuildData(RECORDS);buildRangePicker();renderAll();
+  document.getElementById('dataFoot').textContent='ข้อมูลตัวอย่าง — อัปโหลดสลิปเพื่อใช้ข้อมูลจริง';
   toast('ล้างข้อมูลแล้ว — กลับสู่ข้อมูลตัวอย่าง');
 });
 
-/* ---------- load saved data on startup, else use seed ---------- */
 (async function init(){
+  applyTheme(false);
+  buildRangePicker();
   try{
     const all=await idbAll();
-    const saved=all.filter(r=>r.key&&!r.key.startsWith('__'));
-    if(saved&&saved.length){
-      rebuildAll(saved);
-      buildRangePicker();
-      document.getElementById('dataFoot').textContent='ใช้ข้อมูลที่บันทึกในเครื่อง · '+D.n+' เดือน';
+    const settings=all.find(r=>r.key==='__settings');
+    const savedRaw=all.filter(r=>r.key&&!r.key.startsWith('__'));
+    const seen=new Map(),saved=[];
+    savedRaw.map(normalizeRecord).forEach(r=>{
+      r.key=makeKey(r);
+      const sid=slipIdentity(r);
+      if(!seen.has(sid)){seen.set(sid,saved.length);saved.push(r);}
+      else{
+        const idx=seen.get(sid);
+        if(saved[idx]&&(!saved[idx].amount||saved[idx].needsReview)&&r.amount>0)saved[idx]=r;
+      }
+    });
+    if(saved.length){
+      if(saved.length!==savedRaw.length){try{await idbClear();await idbPut(settings?[...saved,settings]:saved);}catch(e){}}
+      RECORDS=saved;D=rebuildData(RECORDS);buildRangePicker();document.getElementById('dataFoot').textContent='ใช้ข้อมูลสลิปที่บันทึกในเครื่อง · '+D.records.length+' รายการ';
     }
-  }catch(e){/* fall back to seed */}
+  }catch(e){}
   renderAll();
   renderGuide();
-  await loadAccent();
+  await loadSettings();
 })();
 </script>
 </body>
